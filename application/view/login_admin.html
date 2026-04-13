@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Administrateur | Projet Écologique</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta name="description" content="Connectez-vous à votre compte administrateur.">
+    <style>
+        .switch-bubble {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(142, 109, 84, 0.1);
+            color: var(--color-btn);
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .switch-bubble:hover {
+            background: var(--color-btn);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h2 style="color: var(--color-btn);">Espace Admin</h2>
+                <p>Connexion réservée aux administrateurs</p>
+            </div>
+
+            <!-- Note: Action pointe vers le contrôleur PHP loginAdmin -->
+            <form action="../Controller/UserController.php?action=loginAdmin" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="id">ID Administrateur</label>
+                    <input type="number" id="id" name="id" class="form-control" placeholder="Entrez votre ID (ex: 1)">
+                </div>
+
+                <div class="form-group">
+                    <label for="fullname">Nom Complet</label>
+                    <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Nom de l'administrateur">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Admin</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="admin@domaine.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Rôle</label>
+                    <input type="text" id="role" name="role" class="form-control" placeholder="admin" value="admin">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn btn-accent" style="background-color: var(--color-btn);">Accéder au panel</button>
+            </form>
+
+            <div class="auth-footer" style="margin-top: 20px; text-align: center;">
+                <p><a href="login.html" class="btn btn-outline" style="padding: 10px; display: inline-block; width: 100%; box-sizing: border-box;">👤 Se connecter en tant que Client</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/validation.js"></script>
+</body>
+
+</html>

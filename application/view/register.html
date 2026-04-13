@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription | Projet Écologique</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta name="description" content="Créez votre compte pour rejoindre notre plateforme.">
+     <script src="assets/js/validation.js"></script>
+</head>
+
+<body>
+   
+
+    <div class="auth-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h2>Créer un compte</h2>
+                <p>Rejoignez-nous pour une expérience durable</p>
+            </div>
+
+            <!-- Note: Action pointe vers le contrôleur PHP pour gérer l'inscription -->
+            <form action="../Controller/UserController.php?action=register" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="fullname">Nom complet</label>
+                    <input type="text" id="fullname" name="fullname" class="form-control" placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Adresse Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="exemple@domaine.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="birthdate">Date de naissance</label>
+                    <input type="date" id="birthdate" name="birthdate" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="tel">Téléphone</label>
+                    <input type="tel" id="tel" name="tel" class="form-control" placeholder="Ex: 12345678">
+                </div>
+
+                <div class="form-group">
+                    <label for="sexe">Sexe</label>
+                    <select id="sexe" name="sexe" class="form-control">
+                        <option value="" disabled selected>Sélectionnez votre sexe</option>
+                        <option value="homme">Homme</option>
+                        <option value="femme">Femme</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirmer le mot de passe</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                        placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn btn-accent">S'inscrire</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Vous avez déjà un compte ? <a href="login.html">Se connecter</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/validation.js"></script>
+</body>
+
+</html>
