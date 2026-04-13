@@ -22,22 +22,23 @@ class Hotel {
         return $stmt->execute([$id]);
     }
 
-    public function getById($id){
-        $stmt = $this->conn->prepare("SELECT * FROM hotel WHERE id=?");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+   public function getById($id){
+    $stmt = $this->conn->prepare("SELECT * FROM hotel WHERE Id = ?");
+    $stmt->execute([$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
-    public function update($data, $id){
-        $stmt = $this->conn->prepare(
-            "UPDATE hotel SET nom=?, ville=?, etoiles=?, prix=? WHERE id=?"
-        );
-        return $stmt->execute([
-            $data['Nom'],
-            $data['Ville'],
-            $data['Etoiles'],
-            $data['Prix'],
-            $id
-        ]);
-    }
+   public function update($data, $id){
+    $stmt = $this->conn->prepare(
+        "UPDATE hotel SET nom=?, ville=?, etoiles=?, prix=? WHERE id=?"
+    );
+
+    return $stmt->execute([
+        $data[0], // Nom
+        $data[1], // Ville
+        $data[2], // Etoiles
+        $data[3], // Prix
+        $id
+    ]);
+}
 }
