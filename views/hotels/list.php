@@ -1,7 +1,7 @@
 <?php include __DIR__ . "/../layout/header.php"; ?>
 
 <div class="hero">
-    <h1>🏨 Hotels</h1>
+    <h1>🏨 Hotels </h1>
 </div>
 
 <!-- ================= FORM ================= -->

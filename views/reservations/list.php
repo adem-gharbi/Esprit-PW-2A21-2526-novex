@@ -25,7 +25,7 @@
     </select>
 
     <input type="text" name="nom_client" placeholder="👤 Client Name">
-    <input type="date" name="date_reservation">
+    <input type="date" name="date_reservation" min="<?= date('Y-m-d') ?>">
     <input type="number" name="nb_personnes" placeholder="👥 Persons">
 
     <button class="btn-add" type="submit" name="add">
@@ -70,5 +70,21 @@
 <?php } ?>
 
 </div>
+<script>
+document.querySelector("form").addEventListener("submit", function(e){
 
+    let date = document.querySelector("[name='date_reservation']").value;
+
+    let today = new Date();
+    today.setHours(0,0,0,0);
+
+    let selectedDate = new Date(date);
+
+    if(selectedDate < today){
+        alert("❌ Date cannot be before today");
+        e.preventDefault();
+    }
+
+});
+</script>
 <?php include __DIR__ . "/../layout/footer.php"; ?>
