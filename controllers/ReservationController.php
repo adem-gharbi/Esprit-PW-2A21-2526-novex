@@ -21,7 +21,7 @@ class ReservationController {
         return $this->reservation->delete($id);
     }
 
-    /* 👇 ADD THIS */
+    
     public function getById($id){
         return $this->reservation->getById($id);
     }

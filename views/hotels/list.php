@@ -73,4 +73,18 @@
 
 </div>
 
+<script>
+document.querySelector("form").addEventListener("submit", function(e){
+
+    let etoiles = document.querySelector("[name='Etoiles']").value;
+    etoiles = parseInt(etoiles);
+
+    if(etoiles > 5 || etoiles < 0){
+        alert("❌ Stars must be between 0 and 5");
+        e.preventDefault();
+    }
+
+});
+</script>
+
 <?php include __DIR__ . "/../layout/footer.php"; ?>

@@ -8,7 +8,7 @@ $conn = $db->getConnection();
 
 $controller = new ReservationController($conn);
 
-/* 👇 EDIT */
+/* EDIT */
 $edit = null;
 if(isset($_GET['edit'])){
     $edit = $controller->getById($_GET['edit']);

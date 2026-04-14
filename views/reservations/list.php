@@ -74,17 +74,28 @@
 document.querySelector("form").addEventListener("submit", function(e){
 
     let date = document.querySelector("[name='date_reservation']").value;
+    let nom = document.querySelector("[name='nom_client']").value;
 
     let today = new Date();
     today.setHours(0,0,0,0);
 
     let selectedDate = new Date(date);
 
+    // ✅ date
     if(selectedDate < today){
         alert("❌ Date cannot be before today");
         e.preventDefault();
+        return;
+    }
+
+    // ✅ nom (lettres seulement)
+    let regex = /^[A-Za-zÀ-ÿ\s]+$/;
+
+    if(!regex.test(nom)){
+        alert("❌ Name must contain only letters");
+        e.preventDefault();
+        return;
     }
 
 });
 </script>
-<?php include __DIR__ . "/../layout/footer.php"; ?>
