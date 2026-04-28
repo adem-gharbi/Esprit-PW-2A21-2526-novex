@@ -1,4 +1,12 @@
-<?php require_once 'check_auth.php'; ?>
+<?php 
+require_once 'check_auth.php'; 
+require_once '../../Controller/UserController.php';
+$userController = new UserController();
+// On récupère les 5 derniers inscrits
+$allClients = $userController->getAllClients();
+$recentClients = array_slice($allClients, 0, 5);
+$totalClients = count($allClients);
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -43,7 +51,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Utilisateurs</h3>
-                    <p class="stat-value">1,248</p>
+                    <p class="stat-value"><?= $totalClients ?></p>
                 </div>
                 <div class="stat-card">
                     <h3>Nouveaux (Ce mois)</h3>
@@ -62,31 +70,35 @@
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>Nom</th>
+                                <th style="width: 60px;">Photo</th>
+                                <th>Nom Complet</th>
                                 <th>Email</th>
                                 <th>Date d'inscription</th>
                                 <th>Statut</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <?php foreach($recentClients as $c): ?>
                             <tr>
-                                <td> Adem gharbi</td>
-                                <td>Adem@exemple.com</td>
-                                <td>06/04/2026</td>
-                                <td><span class="badge active">Actif</span></td>
+                                <td>
+                                    <?php if (!empty($c['profile_photo'])): ?>
+                                        <img src="../../<?= htmlspecialchars($c['profile_photo']) ?>" alt="Photo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-accent);">
+                                    <?php else: ?>
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #e0e0e0; color: #666; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto;">N/A</div>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($c['fullname']) ?></td>
+                                <td><?= htmlspecialchars($c['email']) ?></td>
+                                <td><?= htmlspecialchars($c['birthdate']) ?></td>
+                                <td><span class="badge active">Récent</span></td>
                             </tr>
+                            <?php endforeach; ?>
+                            
+                            <?php if(count($recentClients) === 0): ?>
                             <tr>
-                                <td>Alice Smith</td>
-                                <td>alice@exemple.com</td>
-                                <td>05/04/2026</td>
-                                <td><span class="badge active">Actif</span></td>
+                                <td colspan="5" style="text-align:center;">Aucun utilisateur trouvé.</td>
                             </tr>
-                            <tr>
-                                <td>Marc Dubois</td>
-                                <td>marc@exemple.com</td>
-                                <td>02/04/2026</td>
-                                <td><span class="badge inactive">Inactif</span></td>
-                            </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

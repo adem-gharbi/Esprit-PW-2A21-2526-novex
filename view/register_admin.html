@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recrutement Administrateur | Projet Écologique</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta name="description" content="Créez un compte Administrateur (Privé).">
+     <script src="assets/js/validation.js"></script>
+</head>
+
+<body>
+   
+
+    <div class="auth-wrapper">
+        <div class="card" style="border-top: 5px solid #2c3e50;"> <!-- Couleur sombre pour se distinguer -->
+            <div class="card-header">
+                <h2 style="color: #2c3e50;">Recrutement Admin</h2>
+                <p>Création d'un accès privilégié au tableau de bord</p>
+            </div>
+
+            <!-- Note: Action pointe vers le contrôleur PHP pour gérer l'inscription -->
+            <form action="../Controller/UserController.php?action=registerAdmin" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="fullname">Nom de l'Administrateur</label>
+                    <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Jean Dupont (Direction)">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Adresse Email Professionnelle</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="admin@projet-ecologique.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirmer le mot de passe</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                        placeholder="••••••••">
+                </div>
+
+                <!-- Section Photo Profile (WebRTC) -->
+                <div class="form-group" style="text-align: center; margin-top: 20px;">
+                    <label>Photo de profil (Obligatoire)</label>
+                    <div style="background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; font-size: 0.85em; margin-bottom: 15px; border-left: 4px solid #4CAF50;">
+                        🔒 <strong>Confidentialité garantie :</strong> Cette photo de sécurité certifiera votre badge Administrateur auprès des autres membres du Conseil Direction.
+                    </div>
+                    <div id="camera-container" style="display: none; border: 2px dashed var(--color-accent); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        <video id="video-stream" width="320" height="240" autoplay style="border-radius: 8px; transform: scaleX(-1);"></video>
+                        <canvas id="photo-canvas" width="320" height="240" style="display: none; border-radius: 8px; transform: scaleX(-1);"></canvas>
+                        <br>
+                        <button type="button" id="btn-capture" class="btn" style="background-color: #2196F3; color: white; margin-top: 10px;">📸 Capturer</button>
+                        <button type="button" id="btn-retake" class="btn" style="display: none; background-color: #f44336; color: white; margin-top: 10px;">🔄 Reprendre</button>
+                    </div>
+                    <button type="button" id="btn-start-camera" class="btn btn-outline" style="width: 100%;">Activer la Caméra</button>
+                    <input type="hidden" name="photo_base64" id="photo_base64">
+                </div>
+
+                <button type="submit" class="btn btn-accent" style="background-color: #2c3e50;">Confirmer la nomination</button>
+            </form>
+
+            <div class="auth-footer">
+                <p><a href="login_admin.html">← Annuler et revenir à l'espace Admin</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/validation.js"></script>
+</body>
+
+</html>

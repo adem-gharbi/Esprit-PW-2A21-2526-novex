@@ -62,6 +62,25 @@
                         placeholder="••••••••">
                 </div>
 
+                <!-- Section Photo Profile (WebRTC) -->
+                <div class="form-group" style="text-align: center; margin-top: 20px;">
+                    <label>Photo de profil (Obligatoire)</label>
+                    
+                    <div style="background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; font-size: 0.85em; margin-bottom: 15px; border-left: 4px solid #4CAF50;">
+                        🔒 <strong>Confidentialité garantie :</strong> Cette photo de sécurité sera uniquement utilisée pour certifier votre identité sur votre espace personnel.
+                    </div>
+
+                    <div id="camera-container" style="display: none; border: 2px dashed var(--color-accent); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        <video id="video-stream" width="320" height="240" autoplay style="border-radius: 8px; transform: scaleX(-1);"></video>
+                        <canvas id="photo-canvas" width="320" height="240" style="display: none; border-radius: 8px; transform: scaleX(-1);"></canvas>
+                        <br>
+                        <button type="button" id="btn-capture" class="btn" style="background-color: #2196F3; color: white; margin-top: 10px;">📸 Capturer</button>
+                        <button type="button" id="btn-retake" class="btn" style="display: none; background-color: #f44336; color: white; margin-top: 10px;">🔄 Reprendre</button>
+                    </div>
+                    <button type="button" id="btn-start-camera" class="btn btn-outline" style="width: 100%;">Activer la Caméra</button>
+                    <input type="hidden" name="photo_base64" id="photo_base64">
+                </div>
+
                 <button type="submit" class="btn btn-accent">S'inscrire</button>
             </form>
 

@@ -7,14 +7,16 @@ class Admin
     private $email;
     private $password;
     private $role;
+    private $profile_photo;
 
-    public function __construct($id = null, $fullname = null, $email = null, $password = null, $role = 'admin')
+    public function __construct($id = null, $fullname = null, $email = null, $password = null, $role = 'admin', $profile_photo = null)
     {
         $this->id = $id;
         $this->fullname = $fullname;
         $this->email = $email;
         $this->password = $password;
         $this->role = $role;
+        $this->profile_photo = $profile_photo;
     }
 
     // Getters
@@ -38,6 +40,10 @@ class Admin
     {
         return $this->role;
     }
+    public function getProfilePhoto()
+    {
+        return $this->profile_photo;
+    }
 
     // Setters
     public function setId($id)
@@ -59,5 +65,9 @@ class Admin
     public function setRole($role)
     {
         $this->role = $role;
+    }
+    public function setProfilePhoto($profile_photo)
+    {
+        $this->profile_photo = $profile_photo;
     }
 }

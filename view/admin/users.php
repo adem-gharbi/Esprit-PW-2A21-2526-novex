@@ -49,6 +49,7 @@ $clients = $userController->getAllClients();
                         <thead>
                             <tr>
                                 <th>#ID</th>
+                                <th style="width: 60px;">Photo</th>
                                 <th>Nom Complet</th>
                                 <th>Email</th>
                                 <th>Téléphone</th>
@@ -60,6 +61,13 @@ $clients = $userController->getAllClients();
                             <?php foreach($clients as $c): ?>
                             <tr>
                                 <td><?= htmlspecialchars($c['id']) ?></td>
+                                <td>
+                                    <?php if (!empty($c['profile_photo'])): ?>
+                                        <img src="../../<?= htmlspecialchars($c['profile_photo']) ?>" alt="Photo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-accent);">
+                                    <?php else: ?>
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #e0e0e0; color: #666; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto;">N/A</div>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= htmlspecialchars($c['fullname']) ?></td>
                                 <td><?= htmlspecialchars($c['email']) ?></td>
                                 <td><?= htmlspecialchars($c['tel']) ?></td>
@@ -73,7 +81,7 @@ $clients = $userController->getAllClients();
                             
                             <?php if (count($clients) === 0): ?>
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 20px;">Aucun utilisateur trouvé.</td>
+                                <td colspan="7" style="text-align: center; padding: 20px;">Aucun utilisateur trouvé.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
