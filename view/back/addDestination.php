@@ -15,9 +15,7 @@ $categorie = "";
    MODE EDITION
 ========================= */
 if (isset($_GET['id'])) {
-
     $id = $_GET['id'];
-
     $stmt = $pdo->prepare("SELECT * FROM destination WHERE id_destination = ?");
     $stmt->execute([$id]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -31,89 +29,93 @@ if (isset($_GET['id'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Destination</title>
-
-    <link rel="stylesheet" href="../../public/css/style.css">
-
-    <style>
-        .msg {
-            font-size: 12px;
-            margin-top: 3px;
-            display: block;
-        }
-
-        .msg-error {
-            color: red;
-        }
-
-        .msg-success {
-            color: green;
-        }
-
-        form {
-            width: 50%;
-            margin: auto;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        button {
-            margin-top: 15px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><?= isset($_GET['id']) ? "Modifier Destination" : "Ajouter Destination" ?></title>
+  <link rel="stylesheet" href="../../public/css/style.css">
 </head>
-
 <body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">VY</div>
+        <div>
+          <div class="brand-title">Voyagio</div>
+          <div class="brand-subtitle">Back Office</div>
+        </div>
+      </div>
+      <nav class="menu">
+        <a href="listDestination.php" class="menu-item active">Destinations</a>
+        <a href="listCircuit.php" class="menu-item">Circuits</a>
+      </nav>
+    </aside>
 
-<header>
-    <?= isset($_GET['id']) ? "Modifier Destination" : "Ajouter Destination" ?>
-</header>
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <div class="page-title"><?= isset($_GET['id']) ? "Modifier Destination" : "Ajouter Destination" ?></div>
+          <div class="page-subtitle"><?= isset($_GET['id']) ? "Edit destination details" : "Create a new destination" ?></div>
+        </div>
+        <div class="user-card">
+          <span>Admin</span>
+          <div class="avatar">AD</div>
+        </div>
+      </header>
 
-<a href="listDestination.php" class="btn">⬅ Retour</a>
+      <section class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2>Destination Details</h2>
+            <p>Fill in the destination information below.</p>
+          </div>
+        </div>
 
-<form method="POST"
-      action="../../controller/DestinationController.php"
-      onsubmit="return validateDestination()">
+        <form class="panel-form" method="POST" action="../../controller/DestinationController.php" onsubmit="return validateDestination()">
+          <input type="hidden" name="id" value="<?= $id ?>">
 
-    <input type="hidden" name="id" value="<?= $id ?>">
+          <label>
+            Ville
+            <input type="text" id="ville" name="ville" value="<?= $ville ?>">
+            <span id="errVille" class="msg"></span>
+          </label>
 
-    <!-- VILLE -->
-    <input type="text" id="ville" name="ville" placeholder="Ville" value="<?= $ville ?>">
-    <span id="errVille" class="msg"></span>
+          <label>
+            Pays
+            <input type="text" id="pays" name="pays" value="<?= $pays ?>">
+            <span id="errPays" class="msg"></span>
+          </label>
 
-    <!-- PAYS -->
-    <input type="text" id="pays" name="pays" placeholder="Pays" value="<?= $pays ?>">
-    <span id="errPays" class="msg"></span>
+          <label>
+            Description
+            <textarea id="description" name="description"><?= $description ?></textarea>
+            <span id="errDescription" class="msg"></span>
+          </label>
 
-    <!-- DESCRIPTION -->
-    <textarea id="description" name="description" placeholder="Description"><?= $description ?></textarea>
-    <span id="errDescription" class="msg"></span>
+          <label>
+            Image (nom du fichier)
+            <input type="text" id="image" name="image" value="<?= $image ?>">
+            <span id="errImage" class="msg"></span>
+          </label>
 
-    <!-- IMAGE -->
-    <input type="text" id="image" name="image" placeholder="Image (ex: paris.jpg)" value="<?= $image ?>">
-    <span id="errImage" class="msg"></span>
+          <label>
+            Catégorie
+            <input type="text" id="categorie" name="categorie" value="<?= $categorie ?>">
+            <span id="errCategorie" class="msg"></span>
+          </label>
 
-    <!-- CATEGORIE -->
-    <input type="text" id="categorie" name="categorie" placeholder="Catégorie" value="<?= $categorie ?>">
-    <span id="errCategorie" class="msg"></span>
-
-    <!-- BUTTON -->
-    <button type="submit" name="<?= isset($_GET['id']) ? 'update' : 'add' ?>">
-        OK
-    </button>
-
-</form>
-
-<script src="../../public/js/validation.js"></script>
-
+          <div class="form-actions">
+            <button type="submit" name="<?= isset($_GET['id']) ? 'update' : 'add' ?>" class="btn btn-primary">
+              <?= isset($_GET['id']) ? 'Modifier' : 'Ajouter' ?>
+            </button>
+            <a href="listDestination.php" class="btn btn-secondary">Retour</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+  <script src="../../public/js/validation.js"></script>
 </body>
 </html>

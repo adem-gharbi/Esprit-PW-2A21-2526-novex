@@ -1,135 +1,101 @@
 window.onload = function () {
 
     let valid = {
-        titre: false,
-        duree: false,
-        prix: false,
-        places: false,
-        date: false,
-        dest: false,
-        hotel: false
+        ville: false,
+        pays: false,
+        description: false,
+        image: false,
+        categorie: false
     };
 
-    function setMsg(id, msg, ok) {
+    function setMsg(id, message, isValid) {
         let el = document.getElementById(id);
-        el.innerHTML = msg;
-        el.className = ok ? "msg msg-success" : "msg msg-error";
+        el.innerHTML = message;
+
+        if (isValid) {
+            el.className = "msg msg-success";
+        } else {
+            el.className = "msg msg-error";
+        }
     }
 
-    // =========================
-    // TITRE (min 4 chars)
-    // =========================
-    document.getElementById("titre").addEventListener("input", function () {
-        if (this.value.trim().length >= 4) {
-            setMsg("errTitre", "✔ Titre valide", true);
-            valid.titre = true;
+    // VILLE
+    document.getElementById("ville").addEventListener("input", function () {
+        if (this.value.trim().length >= 3) {
+            setMsg("errVille", "✔ Ville valide", true);
+            valid.ville = true;
         } else {
-            setMsg("errTitre", "❌ Min 4 caractères", false);
-            valid.titre = false;
+            setMsg("errVille", "❌ Obligatoire (min 3 caractères)", false);
+            valid.ville = false;
         }
     });
 
-    // =========================
-    // DUREE (chiffres uniquement)
-    // =========================
-    document.getElementById("duree").addEventListener("input", function () {
-
-        if (/^\d+$/.test(this.value.trim())) {
-            setMsg("errDuree", "✔ Durée valide", true);
-            valid.duree = true;
+    // PAYS
+    document.getElementById("pays").addEventListener("input", function () {
+        if (this.value.trim().length >= 3) {
+            setMsg("errPays", "✔ Pays valide", true);
+            valid.pays = true;
         } else {
-            setMsg("errDuree", "❌ Chiffres uniquement", false);
-            valid.duree = false;
+            setMsg("errPays", "❌ Obligatoire (min 3 caractères)", false);
+            valid.pays = false;
         }
     });
 
-    // =========================
-    // PRIX (float)
-    // =========================
-    document.getElementById("prix").addEventListener("input", function () {
-
-        if (/^\d+(\.\d+)?$/.test(this.value.trim())) {
-            setMsg("errPrix", "✔ Prix valide", true);
-            valid.prix = true;
+    // DESCRIPTION
+    document.getElementById("description").addEventListener("input", function () {
+        if (this.value.trim().length >= 10) {
+            setMsg("errDescription", "✔ Description valide", true);
+            valid.description = true;
         } else {
-            setMsg("errPrix", "❌ Format: 100 ou 100.50", false);
-            valid.prix = false;
+            setMsg("errDescription", "❌ Obligatoire (min 10 caractères)", false);
+            valid.description = false;
         }
     });
 
-    // =========================
-    // PLACES (>=1)
-    // =========================
-    document.getElementById("nb_places").addEventListener("input", function () {
-
-        if (parseInt(this.value) >= 1) {
-            setMsg("errPlaces", "✔ OK", true);
-            valid.places = true;
-        } else {
-            setMsg("errPlaces", "❌ minimum 1", false);
-            valid.places = false;
-        }
-    });
-
-    // =========================
-    // DATE (>= today)
-    // =========================
-    document.getElementById("date_depart").addEventListener("input", function () {
-
-        let today = new Date().toISOString().split('T')[0];
-
-        if (this.value >= today) {
-            setMsg("errDate", "✔ Date valide", true);
-            valid.date = true;
-        } else {
-            setMsg("errDate", "❌ date passée interdite", false);
-            valid.date = false;
-        }
-    });
-
-    // =========================
-    // DESTINATION
-    // =========================
-    document.getElementById("id_destination").addEventListener("change", function () {
-
-        if (this.value !== "") {
-            setMsg("errDest", "✔ OK", true);
-            valid.dest = true;
-        } else {
-            setMsg("errDest", "❌ obligatoire", false);
-            valid.dest = false;
-        }
-    });
-
-    // =========================
-    // HOTEL
-    // =========================
-    document.getElementById("id_hotel").addEventListener("input", function () {
-
+    // IMAGE
+    document.getElementById("image").addEventListener("input", function () {
         if (this.value.trim() !== "") {
-            setMsg("errHotel", "✔ OK", true);
-            valid.hotel = true;
+            setMsg("errImage", "✔ Image OK", true);
+            valid.image = true;
         } else {
-            setMsg("errHotel", "❌ obligatoire", false);
-            valid.hotel = false;
+            setMsg("errImage", "❌ Obligatoire", false);
+            valid.image = false;
         }
     });
 
-    // =========================
-    // SUBMIT
-    // =========================
-    window.validateCircuit = function () {
+    // CATEGORIE ( 3 caractères minimum)
+    document.getElementById("categorie").addEventListener("input", function () {
+        if (this.value.trim().length >= 3) {
+            setMsg("errCategorie", "✔ Catégorie valide", true);
+            valid.categorie = true;
+        } else {
+            setMsg("errCategorie", "❌ Min 3 caractères", false);
+            valid.categorie = false;
+        }
+    });
 
+    // SUBMIT
+    window.validateDestination = function () {
+
+        let hasError = false;
+
+        // FORCER validation live pour afficher messages
+        document.getElementById("ville").dispatchEvent(new Event('input'));
+        document.getElementById("pays").dispatchEvent(new Event('input'));
+        document.getElementById("description").dispatchEvent(new Event('input'));
+        document.getElementById("image").dispatchEvent(new Event('input'));
+        document.getElementById("categorie").dispatchEvent(new Event('input'));
+
+        // check vide → alert
         if (
-            !valid.titre ||
-            !valid.duree ||
-            !valid.prix ||
-            !valid.places ||
-            !valid.date ||
-            !valid.dest ||
-            !valid.hotel
+
+            !valid.ville ||
+            !valid.pays ||
+            !valid.description ||
+            !valid.image ||
+            !valid.categorie
         ) {
-            alert("⚠️ Veuillez vérifier les champs !");
+            alert("⚠️ Veuillez remplir tous les champs correctement !");
             return false;
         }
 

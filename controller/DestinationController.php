@@ -1,24 +1,61 @@
 <?php
-
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../model/Destination.php';
 
-class DestinationController {
+$db = new Database();
+$pdo = $db->connect();
 
-    private $model;
+$destination = new Destination($pdo);
 
-    public function __construct() {
-        $this->model = new Destination();
-    }
 
-    // 👉 Display all destinations (FrontOffice)
-    public function showAll() {
-        $destinations = $this->model->getAll();
+// ================= ADD =================
+if (isset($_POST['add'])) {
 
-        // path to the content page
-        $content = __DIR__ . '/../view/front/destinations.php';
+    $destination->add(
+        $_POST['ville'],
+        $_POST['pays'],
+        $_POST['description'],
+        $_POST['image'],
+        $_POST['categorie']
+    );
 
-        // load the main layout (skeleton)
-        require __DIR__ . '/../view/layouts/main.php';
-    }
+    header("Location: ../view/back/listDestination.php");
+    exit();
+}
 
+
+// ================= UPDATE =================
+if (isset($_POST['update'])) {
+
+    $sql = "UPDATE destination SET
+        ville = ?,
+        pays = ?,
+        description = ?,
+        image = ?,
+        categorie = ?
+        WHERE id_destination = ?";
+
+    $stmt = $pdo->prepare($sql);
+
+    $stmt->execute([
+        $_POST['ville'],
+        $_POST['pays'],
+        $_POST['description'],
+        $_POST['image'],
+        $_POST['categorie'],
+        $_POST['id']
+    ]);
+
+    header("Location: ../view/back/listDestination.php");
+    exit();
+}
+
+
+// ================= DELETE =================
+if (isset($_GET['delete'])) {
+
+    $destination->delete($_GET['delete']);
+
+    header("Location: ../view/back/listDestination.php");
+    exit();
 }

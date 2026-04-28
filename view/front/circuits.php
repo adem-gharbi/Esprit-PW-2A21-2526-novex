@@ -1,42 +1,51 @@
 <?php
-class Circuit {
-    private $pdo;
+require_once "../../config/database.php";
+require_once "../../model/Circuit.php";
 
-    public function __construct($pdo) {
-        $this->pdo = $pdo;
-    }
+$db = new Database();
+$pdo = $db->connect();
 
-    // ALL circuits
-    public function getAll() {
-        $sql = "SELECT * FROM circuit";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+$circuit = new Circuit($pdo);
 
-    // BY destination (IMPORTANT)
-    public function getByDestination($id) {
-        $sql = "SELECT * FROM circuit WHERE id_destination = ?";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+// récupérer id destination depuis URL
+$id = $_GET['id'] ?? 0;
 
-    // ADD
-    public function add($titre,$duree,$prix,$places,$date,$id_dest,$hotel) {
-        $sql = "INSERT INTO circuit
-        (titre,duree,prix,nb_places,date_depart,id_destination,id_hotel)
-        VALUES (?,?,?,?,?,?,?)";
-
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$titre,$duree,$prix,$places,$date,$id_dest,$hotel]);
-    }
-
-    // DELETE
-    public function delete($id) {
-        $sql = "DELETE FROM circuit WHERE id_circuit=?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$id]);
-    }
-}
+// circuits liés à la destination
+$data = $circuit->getByDestination($id);
 ?>
+
+<link rel="stylesheet" href="../../public/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet">
+
+<!-- HERO HEADER (Friend's Style) -->
+<header class="hero">
+    <h1>Circuits disponibles 🎒</h1>
+</header>
+
+<!-- RETOUR BUTTON -->
+<div style="text-align:center; margin: 20px 0;">
+    <a href="destinations.php" class="btn">⬅ Retour aux destinations</a>
+</div>
+
+<!-- GRID CONTAINER -->
+<div class="grid">
+
+<?php foreach($data as $c): ?>
+
+    <div class="card">
+        
+        <!-- CONTENT -->
+        <div class="card-content">
+            <h3><?= $c['titre'] ?></h3>
+
+            <p><strong>Durée:</strong> <?= $c['duree'] ?> jours</p>
+            <p><strong>Prix:</strong> <?= $c['prix'] ?> TND</p>
+            <p><strong>Places:</strong> <?= $c['nb_places'] ?></p>
+            <p><strong>Date:</strong> <?= $c['date_depart'] ?></p>
+        </div>
+
+    </div>
+
+<?php endforeach; ?>
+
+</div>

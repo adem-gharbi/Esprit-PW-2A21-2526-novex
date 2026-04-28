@@ -7,139 +7,100 @@ $pdo = $db->connect();
 
 $destination = new Destination($pdo);
 $data = $destination->getAll();
+
+// Count circuits per destination (calculated, NOT stored in DB)
+$circuitCounts = [];
+$stmtCounts = $pdo->prepare("SELECT id_destination, COUNT(*) as nb FROM circuit GROUP BY id_destination");
+$stmtCounts->execute();
+foreach ($stmtCounts->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    $circuitCounts[$row['id_destination']] = $row['nb'];
+}
 ?>
-
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>BackOffice - Destinations</title>
-
-    <link rel="stylesheet" href="../../public/css/style.css">
-
-    <style>
-        table {
-            width: 85%;
-            margin: 30px auto;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        th {
-            background: #E8CFC1;
-            color: #3A3A3A;
-            padding: 10px;
-        }
-
-        td {
-            padding: 10px;
-            text-align: center;
-        }
-
-        tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-
-        img {
-            border-radius: 8px;
-        }
-
-        .btn-small {
-            display: inline-block;
-            padding: 5px 8px;
-            font-size: 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            color: white;
-            margin: 2px;
-        }
-
-        .btn-add {
-            display: block;
-            width: fit-content;
-            margin: 20px auto;
-        }
-
-        .edit {
-            background: #A67B5B;
-        }
-
-        .delete {
-            background: #e74c3c;
-        }
-
-        .circuit {
-            background: #9CAF88;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BackOffice - Destinations</title>
+  <link rel="stylesheet" href="../../public/css/style.css">
 </head>
-
 <body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">VY</div>
+        <div>
+          <div class="brand-title">Voyagio</div>
+          <div class="brand-subtitle">Back Office</div>
+        </div>
+      </div>
+      <nav class="menu">
+        <a href="listDestination.php" class="menu-item active">Destinations</a>
+        <a href="listCircuit.php" class="menu-item">Circuits</a>
+      </nav>
+    </aside>
 
-<header>
-    Gestion des Destinations
-</header>
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <div class="page-title">Gestion des Destinations</div>
+          <div class="page-subtitle">Manage all travel destinations</div>
+        </div>
+        <div class="user-card">
+          <span>Admin</span>
+          <div class="avatar">AD</div>
+        </div>
+      </header>
 
-<a href="addDestination.php" class="btn btn-add">+ Ajouter Destination</a>
+      <section class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2>Registered Destinations</h2>
+          </div>
+          <a href="addDestination.php" class="btn btn-primary">+ Ajouter Destination</a>
+        </div>
 
-<table>
-
-    <tr>
-        <th>ID</th>
-        <th>Ville</th>
-        <th>Pays</th>
-        <th>Description</th>
-        <th>Image</th>
-        <th>Catégorie</th>
-        <th>Actions</th>
-    </tr>
-
-    <?php foreach($data as $d): ?>
-    <tr>
-
-        <td><?= $d['id_destination'] ?></td>
-        <td><?= $d['ville'] ?></td>
-        <td><?= $d['pays'] ?></td>
-        <td><?= $d['description'] ?></td>
-
-        <td>
-            <img src="../../public/images/<?= $d['image'] ?>" width="70">
-        </td>
-
-        <td><?= $d['categorie'] ?></td>
-
-        <td>
-
-            <!-- ✏️ Modifier -->
-            <a class="btn-small edit"
-               href="addDestination.php?id=<?= $d['id_destination'] ?>">
-               Modifier
-            </a>
-
-            <!-- 🗑️ Supprimer -->
-            <a class="btn-small delete"
-               href="../../controller/DestinationController.php?delete=<?= $d['id_destination'] ?>"
-               onclick="return confirm('Supprimer cette destination ?')">
-               Supprimer
-            </a>
-
-            <br>
-
-            <!-- 🌍 Voir circuits -->
-            <a class="btn-small circuit"
-               href="../front/circuits.php?id=<?= $d['id_destination'] ?>">
-               Voir Circuits
-            </a>
-
-        </td>
-
-    </tr>
-    <?php endforeach; ?>
-
-</table>
-
+        <?php if (count($data) > 0) : ?>
+          <div class="table-card">
+            <table class="records-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Ville</th>
+                  <th>Pays</th>
+                  <th>Description</th>
+                  <th>Nombre de circuits</th>
+                  <th>Image</th>
+                  <th>Catégorie</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach($data as $d): ?>
+                <tr>
+                  <td><?= $d['id_destination'] ?></td>
+                  <td><?= $d['ville'] ?></td>
+                  <td><?= $d['pays'] ?></td>
+                  <td><?= $d['description'] ?></td>
+                  <td style="text-align:center; font-weight:600; color:var(--brown);"><?= $circuitCounts[$d['id_destination']] ?? 0 ?></td>
+                  <td><img src="../../public/images/<?= $d['image'] ?>" width="70" style="border-radius:8px;"></td>
+                  <td><?= $d['categorie'] ?></td>
+                  <td>
+                    <a class="action-link" href="addDestination.php?id=<?= $d['id_destination'] ?>">Modifier</a>
+                    <a class="action-link danger" href="../../controller/DestinationController.php?delete=<?= $d['id_destination'] ?>" onclick="return confirm('Supprimer cette destination ?')">Supprimer</a>
+                    <br>
+                    <a class="action-link" style="margin-top:6px; display:inline-block;" href="listCircuit.php?id=<?= $d['id_destination'] ?>">Gérer les circuits</a>
+                  </td>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else : ?>
+          <p style="color:var(--text-muted); text-align:center; padding:20px;">No destinations found. <a href="addDestination.php" style="color:var(--accent);">Add the first destination</a>.</p>
+        <?php endif; ?>
+      </section>
+    </main>
+  </div>
 </body>
 </html>

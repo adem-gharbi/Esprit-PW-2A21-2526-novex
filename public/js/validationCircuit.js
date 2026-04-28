@@ -120,19 +120,32 @@ window.onload = function () {
     // =========================
     window.validateCircuit = function () {
 
-        if (
-            !valid.titre ||
-            !valid.duree ||
-            !valid.prix ||
-            !valid.places ||
-            !valid.date ||
-            !valid.dest ||
-            !valid.hotel
-        ) {
-            alert("⚠️ Veuillez vérifier les champs !");
-            return false;
-        }
+    // >>>>> ADD THIS BLOCK HERE <<<<<
+    document.getElementById("titre").dispatchEvent(new Event('input'));
+    document.getElementById("duree").dispatchEvent(new Event('input'));
+    document.getElementById("prix").dispatchEvent(new Event('input'));
+    document.getElementById("nb_places").dispatchEvent(new Event('input'));
+    document.getElementById("date_depart").dispatchEvent(new Event('input'));
+    // Force validate destination since it's locked/hidden
+    if (document.getElementById("id_destination")?.value !== "") {
+        valid.dest = true;
+    }
+    document.getElementById("id_hotel").dispatchEvent(new Event('input'));
+    // >>>>> END OF BLOCK <<<<<
 
-        return true;
-    };
+    if (
+        !valid.titre ||
+        !valid.duree ||
+        !valid.prix ||
+        !valid.places ||
+        !valid.date ||
+        !valid.dest ||
+        !valid.hotel
+    ) {
+        alert("⚠️ Veuillez vérifier les champs !");
+        return false;
+    }
+
+    return true;
+};
 };

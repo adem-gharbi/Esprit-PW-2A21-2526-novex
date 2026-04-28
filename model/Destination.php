@@ -6,7 +6,7 @@ class Destination {
         $this->pdo = $pdo;
     }
 
-    // 🔵 READ ALL
+    //  READ ALL
     public function getAll() {
         try {
             $sql = "SELECT * FROM destination";
@@ -18,7 +18,7 @@ class Destination {
         }
     }
 
-    // 🟢 CREATE
+    //  CREATE
     public function add($ville, $pays, $description, $image, $categorie) {
         try {
             $sql = "INSERT INTO destination (ville, pays, description, image, categorie)
@@ -39,7 +39,7 @@ class Destination {
         }
     }
 
-    // 🔴 DELETE (bonus utile)
+    //  DELETE (bonus utile)
     public function delete($id) {
         try {
             $sql = "DELETE FROM destination WHERE id_destination = ?";
