@@ -1,6 +1,6 @@
 <?php
 
-// 📦 buffer HTML
+//  buffer HTML
 ob_start();
 
 ?>
@@ -47,6 +47,9 @@ ob_start();
     <input name="nb" id="nb"
            placeholder="👥 Personnes"
            value="<?= $edit['nb_personnes'] ?? '' ?>">
+    <input name="discount" id="discount"
+       placeholder="Discount %"
+       value="<?= $edit['discount'] ?? '' ?>">
 
     <!-- 🔘 BOUTON -->
     <?php if(isset($edit)): ?>
@@ -71,64 +74,59 @@ ob_start();
 <?php if(!empty($reservations)): ?>
 
     <?php foreach($reservations as $r): ?>
-    <div class="card">
 
-        <!-- 🖼️ IMAGE -->
-        <img src="/voyagio_final/assets/<?= strtolower($r['hotel_nom']) ?>.jpg"
-             onerror="this.src='/voyagio_final/assets/default.jpg'">
+<div class="card">
 
-        <div class="card-content">
+    <!-- 🎟️ BUTTON QR (ICI DANS LA CARD) -->
+    <a href="/voyagio_final/views/front/ticket.php?id=<?= $r['id'] ?>" class="qr-btn">
+    🎟️ Voir Ticket
+</a>
 
-            <!-- 🏨 HOTEL -->
-            <h3>🏨 <?= $r['hotel_nom'] ?></h3>
+    <!-- 🖼️ IMAGE -->
+    <img src="/voyagio_final/assets/<?= strtolower($r['hotel_nom']) ?>.jpg"
+         onerror="this.src='/voyagio_final/assets/default.jpg'">
 
-            <!-- 👤 CLIENT -->
-            <p>👤 <b><?= $r['nom_client'] ?></b></p>
+    <div class="card-content">
 
-            <!-- 📥 ARRIVÉE -->
-            <p>
-                📥 Arrivée :
-                <?= (!empty($r['date_arrivee']) && $r['date_arrivee'] != '0000-00-00')
-                    ? date("d/m/Y", strtotime($r['date_arrivee']))
-                    : '-' ?>
-            </p>
+        <h3>🏨 <?= $r['hotel_nom'] ?></h3>
 
-            <!-- 📤 DÉPART -->
-            <p>
-                📤 Départ :
-                <?= (!empty($r['date_depart']) && $r['date_depart'] != '0000-00-00')
-                    ? date("d/m/Y", strtotime($r['date_depart']))
-                    : '-' ?>
-            </p>
+        <p>👤 <b><?= $r['nom_client'] ?></b></p>
 
-            <!-- 👥 PERSONNES -->
-            <p class="badge">
-                👥 <?= $r['nb_personnes'] ?> personnes
-            </p>
+        <p>📥 Arrivée :
+            <?= (!empty($r['date_arrivee']) && $r['date_arrivee'] != '0000-00-00')
+                ? date("d/m/Y", strtotime($r['date_arrivee']))
+                : '-' ?>
+        </p>
 
-            <!-- =========================
-                 ACTIONS
-            ========================= -->
-            <div class="actions">
+        <p>📤 Départ :
+            <?= (!empty($r['date_depart']) && $r['date_depart'] != '0000-00-00')
+                ? date("d/m/Y", strtotime($r['date_depart']))
+                : '-' ?>
+        </p>
 
-                <!-- ✏ EDIT -->
-                <a href="?edit=<?= $r['id'] ?>" class="btn-edit">
-                    ✏ Modifier
-                </a>
+        <p class="badge">
+            👥 <?= $r['nb_personnes'] ?> personnes
+        </p>
 
-                <!-- 🗑 DELETE -->
-                <a href="?delete=<?= $r['id'] ?>"
-                   class="btn-delete"
-                   onclick="return confirm('Supprimer cette réservation ?')">
-                    🗑 Supprimer
-                </a>
+        <div class="actions">
 
-            </div>
+            <a href="?edit=<?= $r['id'] ?>" class="btn-edit">
+                ✏ Modifier
+            </a>
+
+            <a href="?delete=<?= $r['id'] ?>"
+               class="btn-delete"
+               onclick="return confirm('Supprimer cette réservation ?')">
+                🗑 Supprimer
+            </a>
 
         </div>
 
     </div>
-    <?php endforeach; ?>
+
+</div>
+
+<?php endforeach; ?>
 
 <?php else: ?>
 

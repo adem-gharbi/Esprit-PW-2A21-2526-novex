@@ -1,39 +1,20 @@
 <?php
-// =========================
-// 🔌 CONNEXION BASE DE DONNÉES
-// =========================
 require_once "../config/database.php";
-
-// =========================
-// 📦 CONTROLLER RÉSERVATION
-// =========================
 require_once "../controllers/ReservationController.php";
 
-// instance controller
 $controller = new ReservationController($db);
 
-// =========================
-// 🔍 RÉCUPÉRATION SEARCH
-// =========================
 $search = $_GET['search'] ?? "";
 
-// =========================
-// 📋 PAR DÉFAUT : TOUTES LES RÉSERVATIONS
-// =========================
-$reservations = $controller->index();
+$stats = [];
 
-// flag si aucun résultat
+$reservations = $controller->index();
 $noResult = false;
 
-// =========================
-// 🔍 SI RECHERCHE ACTIVE
-// =========================
+// 🔍 SEARCH
 if (!empty($search)) {
-
-    // appel fonction search
     $result = $controller->search($search);
 
-    // si résultat trouvé
     if (!empty($result)) {
         $reservations = $result;
     } else {
@@ -41,93 +22,67 @@ if (!empty($search)) {
     }
 }
 
-// =========================
-// 🟡 START HTML
-// =========================
+// 📊 STATS
+if (isset($_GET['show_stat'])) {
+    $stats = $controller->statsByHotel();
+}
+
+// 📊 PREPARE CHART DATA
+$labels = [];
+$data = [];
+
+if (!empty($stats)) {
+    foreach ($stats as $s) {
+        $labels[] = $s['hotel_nom'] . " (" . $s['percentage'] . "%)";
+        $data[]   = $s['percentage'];
+    }
+}
+
 ob_start();
 ?>
 
-<!-- =========================
-     HEADER PAGE
-========================= -->
+<!-- ========================= HEADER ========================= -->
 <div class="res-header">
 
-    <div class="res-title">
-        📅 Liste des réservations
-    </div>
+    <h2>📅 Liste des réservations</h2>
 
-    <!-- 🔍 SEARCH FORM -->
-    <form class="search-box" method="GET">
-
-        <input type="text"
-               name="search"
-               placeholder="🔍 Rechercher client..."
-               value="<?= htmlspecialchars($search) ?>">
-
-        <button type="submit">Rechercher</button>
-
+    <!-- SEARCH -->
+    <form method="GET">
+        <input type="text" name="search" placeholder="🔍 Rechercher client..." value="<?= htmlspecialchars($search) ?>">
+        <button>Rechercher</button>
     </form>
+
+    <!-- STATS BUTTON -->
+    <a href="?show_stat=1" class="stat-btn">
+    📊 Statistiques
+</a>
 
 </div>
 
-<!-- =========================
-     MESSAGE SI VIDE
-========================= -->
+<!-- ========================= MESSAGE ========================= -->
 <?php if ($noResult): ?>
-    <p style="color:red;text-align:center;font-weight:600;">
-        ❌ Aucun résultat pour "<?= htmlspecialchars($search) ?>"
+    <p style="color:red;text-align:center;">
+        ❌ Aucun résultat
     </p>
 <?php endif; ?>
 
-<!-- =========================
-     GRID RESERVATIONS
-========================= -->
+<!-- ========================= LIST ========================= -->
 <div class="res-grid">
 
 <?php foreach ($reservations as $r): ?>
 
     <div class="res-card">
 
-        <!-- 🏨 HOTEL -->
-        <div class="res-hotel">
-            🏨 <?= htmlspecialchars($r['hotel_nom'] ?? $r['hotel'] ?? '') ?>
-        </div>
+        <h3>🏨 <?= htmlspecialchars($r['hotel_nom']) ?></h3>
 
-        <!-- 📍 VILLE + ⭐ -->
-        <div class="res-location">
-            📍 <?= htmlspecialchars($r['ville'] ?? $r['Ville'] ?? '') ?>
-            |
-            <span class="star">
-                ⭐ <?= htmlspecialchars($r['etoiles'] ?? $r['Etoiles'] ?? '') ?>
-            </span>
-        </div>
+        <p>👤 <?= htmlspecialchars($r['nom_client']) ?></p>
 
-        <!-- 👤 CLIENT -->
-        <div class="res-info">
+        <p>📥 <?= date("d/m/Y", strtotime($r['date_arrivee'])) ?></p>
+        <p>📤 <?= date("d/m/Y", strtotime($r['date_depart'])) ?></p>
 
-            👤 <?= htmlspecialchars($r['nom_client'] ?? $r['client'] ?? '') ?>
-            <br><br>
+        <p>👥 <?= $r['nb_personnes'] ?> personnes</p>
 
-            📥 Arrivée :
-            <?= !empty($r['date_arrivee'] ?? $r['date_arrive'])
-                ? date("d/m/Y", strtotime($r['date_arrivee'] ?? $r['date_arrive']))
-                : '-' ?>
-            <br>
-
-            📤 Départ :
-            <?= !empty($r['date_depart'])
-                ? date("d/m/Y", strtotime($r['date_depart']))
-                : '-' ?>
-            <br><br>
-
-            👥 <?= htmlspecialchars($r['nb_personnes'] ?? $r['personnes'] ?? 0) ?> personnes
-
-        </div>
-
-        <!-- 🆔 ID -->
-        <div class="res-id">
-            ID #<?= htmlspecialchars($r['id']) ?>
-        </div>
+        <p>ID #<?= $r['id'] ?></p>
 
     </div>
 
@@ -135,10 +90,60 @@ ob_start();
 
 </div>
 
+<!-- ========================= CHART ========================= -->
+<?php if (!empty($stats)): ?>
+
+<h2 style="text-align:center; margin-top:40px;">
+    📊 Réservations en pourcentage
+</h2>
+
+<div style="width:400px; margin:40px auto;">
+    <canvas id="hotelChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('hotelChart');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: <?= json_encode($labels) ?>,
+        datasets: [{
+            data: <?= json_encode($data) ?>,
+            backgroundColor: [
+                '#ff6384',
+                '#36a2eb',
+                '#ffce56',
+                '#4bc0c0',
+                '#9966ff',
+                '#ff9f40'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.label + " : " + context.raw + "%";
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+
+<?php endif; ?>
+
 <?php
-// =========================
-// 📤 ENVOI TEMPLATE
-// =========================
 $content = ob_get_clean();
 include "../views/back/template.php";
 ?>

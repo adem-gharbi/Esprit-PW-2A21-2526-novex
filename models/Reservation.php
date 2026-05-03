@@ -1,109 +1,108 @@
 <?php
 
-// 🏨 Classe Reservation = MODELE (accès base de données)
+// 🏨 MODELE RESERVATION
 class Reservation {
 
-    // 🔌 connexion PDO à la base de données
     private $conn;
 
-    // 🧱 constructeur : reçoit la connexion DB
     public function __construct($db){
-
-        // 📌 stocke la connexion dans la classe
         $this->conn = $db;
     }
 
-    // 📋 RÉCUPÉRER TOUTES LES RÉSERVATIONS
+    // =========================
+    // 📋 GET ALL
+    // =========================
     public function getAll(){
 
-        // 🧠 requête SQL avec JOIN pour afficher hôtel + réservation
         $sql = "SELECT r.*, h.Nom AS hotel_nom, h.Ville, h.Etoiles
                 FROM reservation r
                 JOIN hotel h ON r.hotel_id = h.Id";
 
-        // ▶ exécution directe (pas de paramètre ici)
         return $this->conn->query($sql);
     }
 
-    // ➕ AJOUTER UNE RÉSERVATION
-    public function add($hotel_id, $nom, $arrivee, $depart, $nb){
+    // =========================
+    // ➕ ADD
+    // =========================
+    public function add($hotel_id, $nom, $arrivee, $depart, $nb, $discount){
 
-        // 🧠 requête préparée pour sécurité SQL injection
         $stmt = $this->conn->prepare("
             INSERT INTO reservation
-            (hotel_id, nom_client, date_arrivee, date_depart, nb_personnes)
-            VALUES (?, ?, ?, ?, ?)
+            (hotel_id, nom_client, date_arrivee, date_depart, nb_personnes, discount)
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
 
-        // ▶ exécution avec données utilisateur
-        return $stmt->execute([
-            $hotel_id,
-            $nom,
-            $arrivee,
-            $depart,
-            $nb
-        ]);
-    }
-
-    // ✏️ MODIFIER UNE RÉSERVATION
-    public function update($id, $hotel_id, $nom, $arrivee, $depart, $nb){
-
-        // 🧠 update sécurisé
-        $stmt = $this->conn->prepare("
-            UPDATE reservation
-            SET hotel_id = ?,
-                nom_client = ?,
-                date_arrivee = ?,
-                date_depart = ?,
-                nb_personnes = ?
-            WHERE id = ?
-        ");
-
-        // ▶ exécution
         return $stmt->execute([
             $hotel_id,
             $nom,
             $arrivee,
             $depart,
             $nb,
+            $discount
+        ]);
+    }
+
+    // =========================
+    // ✏️ UPDATE
+    // =========================
+    public function update($id, $hotel_id, $nom, $arrivee, $depart, $nb, $discount){
+
+        $stmt = $this->conn->prepare("
+            UPDATE reservation
+            SET hotel_id = ?,
+                nom_client = ?,
+                date_arrivee = ?,
+                date_depart = ?,
+                nb_personnes = ?,
+                discount = ?
+            WHERE id = ?
+        ");
+
+        return $stmt->execute([
+            $hotel_id,
+            $nom,
+            $arrivee,
+            $depart,
+            $nb,
+            $discount,
             $id
         ]);
     }
 
-    // 🗑️ SUPPRIMER UNE RÉSERVATION
+    // =========================
+    // 🗑️ DELETE
+    // =========================
     public function delete($id){
 
-        // 🧠 suppression sécurisée
         $stmt = $this->conn->prepare("
             DELETE FROM reservation
             WHERE id = ?
         ");
 
-        // ▶ exécution
         return $stmt->execute([$id]);
     }
 
-    // 🔍 RÉCUPÉRER UNE RÉSERVATION PAR ID
+    // =========================
+    // 🔍 GET BY ID
+    // =========================
     public function getById($id){
 
-        // 🧠 requête simple
         $stmt = $this->conn->prepare("
             SELECT *
             FROM reservation
             WHERE id = ?
         ");
 
-        // ▶ exécution
         $stmt->execute([$id]);
 
-        // 📦 retourne une seule réservation
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // 🏨 RÉSERVATIONS D’UN HOTEL
+    // =========================
+    // 🏨 GET BY HOTEL
+    // =========================
     public function getByHotel($hotel_id){
 
-        // 🧠 join pour afficher hotel + reservation
         $stmt = $this->conn->prepare("
             SELECT r.*, h.Nom AS hotel_nom, h.Ville, h.Etoiles
             FROM reservation r
@@ -111,17 +110,16 @@ class Reservation {
             WHERE r.hotel_id = ?
         ");
 
-        // ▶ exécution
         $stmt->execute([$hotel_id]);
 
-        // 📦 retourne plusieurs lignes
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 🔎 RECHERCHE PAR NOM CLIENT
+    // =========================
+    // 🔎 SEARCH
+    // =========================
     public function searchByName($nom){
 
-        // 🧠 recherche LIKE (partielle)
         $stmt = $this->conn->prepare("
             SELECT r.*, h.Nom AS hotel_nom, h.Ville, h.Etoiles
             FROM reservation r
@@ -129,11 +127,30 @@ class Reservation {
             WHERE r.nom_client LIKE ?
         ");
 
-        // ▶ recherche avec wildcard %
         $stmt->execute(["%$nom%"]);
 
-        // 📦 retourne résultats
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // =========================
+    // 📊 STATISTIQUES PAR HÔTEL AVEC POURCENTAGE
+    // =========================
+    public function countReservationsByHotel(){
+
+    $sql = "
+        SELECT 
+            h.Nom AS hotel_nom,
+            COUNT(r.id) AS total,
+            ROUND(
+                (COUNT(r.id) * 100.0) / (SELECT COUNT(*) FROM reservation),
+                2
+            ) AS percentage
+        FROM reservation r
+        JOIN hotel h ON r.hotel_id = h.Id
+        GROUP BY r.hotel_id
+    ";
+
+    return $this->conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+}
 }
 ?>

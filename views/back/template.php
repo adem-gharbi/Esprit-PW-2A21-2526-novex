@@ -453,6 +453,24 @@ tr:hover {
     font-weight:600;
     color:#A67B5B;
 } 
+.stat-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background: linear-gradient(135deg,#36a2eb,#9966ff);
+    color:white;
+    padding:10px 18px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:600;
+    box-shadow:0 6px 15px rgba(0,0,0,0.2);
+    transition:0.3s;
+}
+
+.stat-btn:hover{
+    transform: translateY(-2px);
+    box-shadow:0 10px 20px rgba(0,0,0,0.3);
+}
 
 </style>
 

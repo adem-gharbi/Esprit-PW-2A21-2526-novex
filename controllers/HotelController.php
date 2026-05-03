@@ -1,9 +1,9 @@
 <?php
 
-// 🔗 On importe le modèle Hotel (qui gère la base de données)
+//  On importe le modèle Hotel (qui gère la base de données)
 require_once "../models/Hotel.php";
 
-// 🏨 Classe contrôleur qui gère la logique des hôtels
+//  Classe contrôleur qui gère la logique des hôtels
 class HotelController {
 
     //  Variable privée qui va contenir l'objet Hotel (modèle)

@@ -1,5 +1,5 @@
 <?php
-
+//page avant afficher
 // 🟢 capture du contenu HTML
 ob_start();
 
@@ -33,7 +33,7 @@ $next = (isset($_GET['order']) && $_GET['order'] === 'asc') ? 'desc' : 'asc';
 ========================= -->
 <div class="grid">
 
-<?php if(!empty($hotels)): ?>
+<?php if(!empty($hotels)): ?> 
 
     <!-- 🔁 boucle hôtels -->
     <?php foreach($hotels as $h): ?>

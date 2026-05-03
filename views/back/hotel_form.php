@@ -14,7 +14,7 @@ ob_start();
 <div class="res-header">
 
     <div class="res-title">
-        <?= isset($hotel) ? "✏️ Edit Hotel" : "🏨 Add Hotel" ?>
+        <?= isset($hotel) ? "✏️ Edit Hotel" : "🏨 Add Hotel" ?>//voir le variable existe ou no
     </div>
 
 </div>
@@ -96,7 +96,7 @@ ob_start();
      VALIDATION JS
      - contrôle côté client
 ========================= -->
-<script>
+<script>// Vérifie si les informations sont correctes avant ajout.
 
 function validate(){
 
