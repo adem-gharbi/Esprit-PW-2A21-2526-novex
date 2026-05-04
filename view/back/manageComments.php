@@ -19,6 +19,24 @@ global $postModel;
 <title>Manage Comments</title>
 <link rel="stylesheet" href="../../assets/css/admin.css">
 
+<style>
+/* ✅ Indentation des réponses dans le back-office */
+.reply-item{
+    margin-left:30px;
+    border-left:3px solid #e8cfc1;
+    padding-left:12px;
+    margin-top:6px;
+    background:#fdf8f5;
+    border-radius:0 8px 8px 0;
+}
+.reply-label{
+    font-size:11px;
+    color:#a67b5b;
+    font-weight:600;
+    margin-bottom:4px;
+}
+</style>
+
 <script>
 // LIKE COMMENT
 function likeComment(id){
@@ -76,6 +94,7 @@ function likeComment(id){
 <h2><?= htmlspecialchars($post['titre']) ?></h2>
 
 <?php
+// Récupération des commentaires racines du post
 $comments = $postModel->getComments($post['id']);
 foreach($comments as $c){
 ?>
@@ -119,13 +138,54 @@ foreach($comments as $c){
 
 </div>
 
+<!-- ✅ NOUVEAU : Affichage des réponses dans le back-office -->
+<?php
+$replies = $postModel->getReplies($c['id']);
+foreach($replies as $r){
+?>
+<div class="reply-item">
+    <div class="reply-label">↩ Réponse</div>
+
+    <div class="comment-header">
+        <strong><?= $r['username'] ?? 'User' ?></strong>
+        <span><?= $r['date_comment'] ?? '' ?></span>
+    </div>
+
+    <p><?= htmlspecialchars($r['contenu']) ?></p>
+
+    <div class="comment-actions">
+
+        <!-- LIKE réponse -->
+        <button class="btn-small" onclick="likeComment(<?= $r['id'] ?>)">❤️</button>
+        <span id="clike-<?= $r['id'] ?>">
+            <?= $postModel->countCommentLikes($r['id']) ?>
+        </span>
+
+        <!-- UPDATE réponse -->
+        <form action="../../controller/PostController.php" method="POST" style="display:flex; gap:5px;">
+            <input type="hidden" name="id" value="<?= $r['id'] ?>">
+            <input type="text" name="contenu" value="<?= htmlspecialchars($r['contenu']) ?>">
+            <button class="btn-small" name="updateComment">✏️</button>
+        </form>
+
+        <!-- DELETE réponse -->
+        <a class="btn-danger"
+           href="../../controller/PostController.php?deleteComment=<?= $r['id'] ?>"
+           onclick="return confirm('Delete this reply?')">
+           🗑
+        </a>
+
+    </div>
+</div>
+<?php } // fin boucle replies ?>
+
 </div>
 
-<?php } ?>
+<?php } // fin boucle comments ?>
 
 </div>
 
-<?php } ?>
+<?php } // fin boucle posts ?>
 
 </section>
 

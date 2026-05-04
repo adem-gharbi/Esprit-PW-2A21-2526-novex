@@ -1,236 +1,227 @@
 <?php
-
-// ============================
-// 📌 IMPORT DU MODEL POST
-// 👉 On charge la classe Post pour accéder à la base de données
-// ============================
 require_once __DIR__ . "/../model/Post.php";
 
-// 🧠 Création d'un objet Post (accès aux fonctions du modèle)
 $postModel = new Post();
 
-
 // ============================
-// 👍 LIKE POST
+// REACTIONS EMOJI
 // ============================
-// Vérifie si l'utilisateur a cliqué sur "likePost"
-if(isset($_POST['likePost']) && isset($_POST['id'])){
-
-    // 🔢 conversion de l'id en entier pour sécurité
-    $id = intval($_POST['id']);
-
-    // ❤️ appel du modèle pour ajouter un like
-    $postModel->likePost($id);
-
-    // 📤 retourne le nombre de likes mis à jour
-    echo $postModel->countLikes($id);
-
-    // ⛔ stop script après réponse AJAX
+if(isset($_POST['setReaction'])){
+    $postModel->setReaction($_POST['post_id'], $_POST['type']);
+    echo json_encode($postModel->getReactions($_POST['post_id']));
     exit();
 }
 
-
 // ============================
-// ❤️ LIKE COMMENTAIRE
+// GET REACTIONS (poll)
 // ============================
-// Vérifie si like sur commentaire
-if(isset($_POST['likeComment']) && isset($_POST['id'])){
-
-    // 🔢 sécurisation ID commentaire
-    $id = intval($_POST['id']);
-
-    // ❤️ ajout like commentaire
-    $postModel->likeComment($id);
-
-    // 📤 retourne nombre de likes commentaire
-    echo $postModel->countCommentLikes($id);
-
+if(isset($_GET['getReactions'])){
+    echo json_encode($postModel->getReactions($_GET['post_id']));
     exit();
 }
 
+// ============================
+// LIKE COMMENT
+// ============================
+if(isset($_POST['likeComment'])){
+    $postModel->likeComment($_POST['id']);
+    echo $postModel->countCommentLikes($_POST['id']);
+    exit();
+}
 
 // ============================
-// 💬 AJOUT COMMENTAIRE
+// ADD COMMENT (avec parent_id et notifications)
 // ============================
-// Vérifie si demande ajout commentaire
 if(isset($_POST['addComment'])){
+    $parent_id = (isset($_POST['parent_id']) && $_POST['parent_id'] != '')
+                 ? intval($_POST['parent_id'])
+                 : null;
+    $username = isset($_POST['username']) ? trim($_POST['username']) : 'User';
+    $comment_id = $postModel->addComment($_POST['post_id'], $_POST['contenu'], $parent_id, $username);
 
-    // 🔍 vérifie que les champs ne sont pas vides
-    if(!empty($_POST['post_id']) && !empty($_POST['contenu'])){
-
-        // 🔢 sécurisation id post
-        $post_id = intval($_POST['post_id']);
-
-        // ✂️ nettoyage texte commentaire
-        $contenu = trim($_POST['contenu']);
-
-        // 🔥 VALIDATION BACKEND (sécurité importante)
-        // 👉 interdit plus de 5 mots
-        if(str_word_count($contenu) > 5){
-            echo "error: max 5 words";
-            exit();
-        }
-
-        // 💾 ajout commentaire en base
-        $postModel->addComment($post_id, $contenu);
-
-        // 📤 réponse succès AJAX
-        echo "ok";
+    // Notification au propriétaire du post (user_id=1 par défaut)
+    $post = $postModel->getPostById($_POST['post_id']);
+    if($post){
+        $who = $parent_id ? "a répondu à un commentaire" : "a commenté";
+        $postModel->addNotification(
+            $post['user_id'] ?? 1,
+            ($username ?: 'Quelqu\'un') . " " . $who . " sur : " . $post['titre'],
+            $_POST['post_id']
+        );
     }
-
+    echo "ok";
     exit();
 }
 
-
 // ============================
-// ✏️ MODIFIER COMMENTAIRE
+// ADD POST
 // ============================
-// Vérifie modification commentaire
-if(isset($_POST['updateComment'])){
-
-    if(!empty($_POST['id']) && !empty($_POST['contenu'])){
-
-        // 🔢 sécurisation ID commentaire
-        $id = intval($_POST['id']);
-
-        // ✂️ nettoyage contenu
-        $contenu = trim($_POST['contenu']);
-
-        // 💾 update en base
-        $postModel->updateComment($id, $contenu);
-    }
-
-    // 🔁 retour page précédente
-    header("Location: " . $_SERVER['HTTP_REFERER']);
-    exit();
-}
-
-
-// ============================
-// ❌ SUPPRIMER COMMENTAIRE
-// ============================
-// Vérifie suppression commentaire
-if(isset($_GET['deleteComment'])){
-
-    // 🔢 sécurisation id
-    $id = intval($_GET['deleteComment']);
-
-    // 🗑 suppression en base
-    $postModel->deleteComment($id);
-
-    // 🔁 retour page précédente
-    header("Location: " . $_SERVER['HTTP_REFERER']);
-    exit();
-}
-
-
-// ============================
-// ➕ AJOUT POST
-// ============================
-// Vérifie ajout post
 if(isset($_POST['addPost'])){
 
-    // 📝 récupération titre
-    $titre = trim($_POST['titre']);
-
-    // 📝 récupération contenu
+    $titre   = trim($_POST['titre']);
     $contenu = trim($_POST['contenu']);
+    $image   = "";
+    $user_id = 1;
 
-    // 🖼 image vide par défaut
-    $image = "";
-
-    // 📁 vérifie si image uploadée
     if(isset($_FILES['image']) && $_FILES['image']['name'] != ""){
-
-        // 🔄 nettoyage nom image
         $image = str_replace(" ", "_", $_FILES['image']['name']);
-
-        // 📂 fichier temporaire
-        $tmp = $_FILES['image']['tmp_name'];
-
-        // 📥 déplacement vers dossier images
-        move_uploaded_file($tmp, __DIR__."/../assets/images/".$image);
+        move_uploaded_file($_FILES['image']['tmp_name'],
+            __DIR__."/../assets/images/".$image);
     }
 
-    // 💾 insertion post en base
-    $postModel->addPost($titre, $contenu, $image);
+    $scheduled_at = null;
+    if(isset($_POST['scheduled_at']) && trim($_POST['scheduled_at']) != ""){
+        $scheduled_at = trim($_POST['scheduled_at']);
+    }
 
-    // 🔁 redirection vers page forum
-    header("Location: ../view/front/index.php");
+    $post_id = $postModel->addPost($titre, $contenu, $image, $user_id, $scheduled_at);
+
+    // Associer les tags
+    if(isset($_POST['tags']) && is_array($_POST['tags'])){
+        $postModel->setPostTags($post_id, $_POST['tags']);
+    }
+
+    header("Location: ../view/front/index.php?success=1");
     exit();
 }
 
-
 // ============================
-// 🗑 SUPPRIMER POST
-// ============================
-if(isset($_GET['delete'])){
-
-    // 🔢 sécurisation id post
-    $id = intval($_GET['delete']);
-
-    // 🗑 suppression post
-    $postModel->deletePost($id);
-
-    // 🔁 retour page admin
-    header("Location: ../view/back/managePosts.php");
-    exit();
-}
-
-
-// ============================
-// 🔄 MODIFIER POST
+// UPDATE POST
 // ============================
 if(isset($_POST['updatePost'])){
+    $id      = $_POST['id'];
+    $titre   = $_POST['titre'];
+    $contenu = $_POST['contenu'];
+    $image   = "";
 
-    // 🔢 id post
-    $id = intval($_POST['id']);
-
-    // 📝 titre
-    $titre = trim($_POST['titre']);
-
-    // 📝 contenu
-    $contenu = trim($_POST['contenu']);
-
-    // 🖼 image vide
-    $image = "";
-
-    // 📁 si nouvelle image
     if(isset($_FILES['image']) && $_FILES['image']['name'] != ""){
-
-        // 🔄 nettoyage nom image
         $image = str_replace(" ", "_", $_FILES['image']['name']);
-
-        // 📂 fichier temporaire
-        $tmp = $_FILES['image']['tmp_name'];
-
-        // 📥 upload image
-        move_uploaded_file($tmp, __DIR__."/../assets/images/".$image);
+        move_uploaded_file($_FILES['image']['tmp_name'],
+            __DIR__."/../assets/images/".$image);
     }
 
-    // 💾 update post
     $postModel->updatePost($id, $titre, $contenu, $image);
 
-    // 🔁 retour admin
+    // Mise à jour des tags
+    if(isset($_POST['tags']) && is_array($_POST['tags'])){
+        $postModel->setPostTags($id, $_POST['tags']);
+    }
+
+    header("Location: ../view/back/managePosts.php?updated=1");
+    exit();
+}
+
+// ============================
+// UPDATE COMMENT
+// ============================
+if(isset($_POST['updateComment'])){
+    $postModel->updateComment($_POST['id'], $_POST['contenu']);
+    header("Location: ../view/back/manageComments.php?updated=1");
+    exit();
+}
+
+// ============================
+// DELETE POST
+// ============================
+if(isset($_GET['delete'])){
+    $postModel->deletePost($_GET['delete']);
     header("Location: ../view/back/managePosts.php");
     exit();
 }
 
+// ============================
+// DELETE COMMENT
+// ============================
+if(isset($_GET['deleteComment'])){
+    $postModel->deleteComment($_GET['deleteComment']);
+    header("Location: " . $_SERVER['HTTP_REFERER']);
+    exit();
+}
 
 // ============================
-// 📦 FONCTIONS UTILITAIRES FRONT
+// PIN / UNPIN POST
+// ============================
+if(isset($_GET['togglePin'])){
+    $postModel->togglePin($_GET['togglePin']);
+    header("Location: ../view/back/managePosts.php");
+    exit();
+}
+
+// ============================
+// SIGNALEMENT
+// ============================
+if(isset($_POST['report'])){
+    $postModel->addReport($_POST['report_type'], $_POST['target_id'], $_POST['motif']);
+    echo "reported";
+    exit();
+}
+
+// ============================
+// MARQUER RAPPORT EXAMINÉ
+// ============================
+if(isset($_GET['reviewReport'])){
+    $postModel->markReportReviewed($_GET['reviewReport']);
+    header("Location: ../view/back/manageReports.php");
+    exit();
+}
+
+// ============================
+// NOTIFICATIONS - MARQUER LU
+// ============================
+if(isset($_POST['markNotifRead'])){
+    $postModel->markNotificationsRead(1);
+    echo "ok";
+    exit();
+}
+
+// ============================
+// NOTIFICATIONS - POLL
+// ============================
+if(isset($_GET['pollNotifications'])){
+    echo json_encode([
+        'count' => (int)$postModel->countUnreadNotifications(1),
+        'items' => $postModel->getNotifications(1, 5)
+    ]);
+    exit();
+}
+
+// ============================
+// EXPORT CSV
+// ============================
+if(isset($_GET['exportPosts'])){
+    $postModel->exportPostsCSV();
+}
+
+if(isset($_GET['exportComments'])){
+    $postModel->exportCommentsCSV();
+}
+
+// ============================
+// FOLLOW / UNFOLLOW
+// ============================
+if(isset($_POST['follow'])){
+    $postModel->followUser(1, $_POST['user_id']);
+    echo "followed";
+    exit();
+}
+
+if(isset($_POST['unfollow'])){
+    $postModel->unfollowUser(1, $_POST['user_id']);
+    echo "unfollowed";
+    exit();
+}
+
+// ============================
+// FUNCTIONS GLOBALES
 // ============================
 
-// 📌 récupérer tous les posts
 function getPosts(){
     global $postModel;
     return $postModel->getAllPosts();
 }
 
-// 📌 récupérer un seul post
 function getPost($id){
     global $postModel;
     return $postModel->getPostById($id);
 }
-
 ?>

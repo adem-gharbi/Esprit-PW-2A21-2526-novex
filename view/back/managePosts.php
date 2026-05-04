@@ -1,204 +1,164 @@
 <?php
-// Démarrage de la session pour accéder aux données de l'utilisateur connecté
 session_start();
-
-// 🔐 Sécurité : vérification si l'admin est connecté
-if(!isset($_SESSION['admin'])){
-    // Redirection vers la page login si non connecté
-    header("Location: login.php");
-    exit(); // arrêt du script
-}
-
-// Inclusion du controller pour accéder aux fonctions (posts, comments)
+if(!isset($_SESSION['admin'])){ header("Location: login.php"); exit(); }
 include("../../controller/PostController.php");
-
-// Récupération de tous les posts depuis la base de données
 $posts = getPosts();
-
-// Accès global au modèle Post pour utiliser ses méthodes
 global $postModel;
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
-
-  <!-- Responsive design -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Titre de la page -->
-  <title>Manage Posts</title>
-
-  <!-- Import du CSS admin -->
-  <link rel="stylesheet" href="../../assets/css/admin.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Posts</title>
+<link rel="stylesheet" href="../../assets/css/admin.css">
+<style>
+.tag-badge{
+  display:inline-block; background:#f5ede6; color:#a67b5b;
+  border:1px solid #e8cfc1; border-radius:12px;
+  padding:2px 9px; font-size:11px; margin:2px;
+}
+.pin-btn{
+  background:none; border:1px solid #ffc107; color:#856404;
+  border-radius:10px; padding:5px 12px; cursor:pointer; font-size:12px;
+}
+.pin-btn.pinned{ background:#fff3cd; font-weight:600; }
+.scheduled-info{ font-size:12px; color:#0066cc; font-style:italic; }
+.history-toggle{
+  background:none; border:none; color:#a67b5b; cursor:pointer;
+  font-size:12px; text-decoration:underline; padding:0;
+}
+.history-box{
+  display:none; background:#fafafa; border:1px solid #eee;
+  border-radius:10px; padding:12px; margin-top:10px;
+}
+.history-box.open{ display:block; }
+.history-item{
+  border-bottom:1px solid #eee; padding:6px 0; font-size:12px; color:#666;
+}
+</style>
 </head>
-
 <body>
-
-<!-- STRUCTURE PRINCIPALE -->
 <div class="app-shell">
 
-  <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar">
-
-    <!-- Logo / Brand -->
     <div class="brand">
       <div class="brand-icon">VA</div>
-      <div>
-        <div class="brand-title">Voyagio</div>
-        <div class="brand-subtitle">Back Office</div>
-      </div>
+      <div><div class="brand-title">Voyagio</div><div class="brand-subtitle">Back Office</div></div>
     </div>
-
-    <!-- Menu navigation admin -->
     <nav class="menu">
       <a href="dashboard.php" class="menu-item">Dashboard</a>
       <a href="managePosts.php" class="menu-item active">Posts</a>
       <a href="manageComments.php" class="menu-item">Comments</a>
+      <a href="manageReports.php" class="menu-item">Signalements</a>
     </nav>
-
   </aside>
 
-  <!-- ================= CONTENT ================= -->
   <main class="content">
-
-    <!-- HEADER TOP BAR -->
     <header class="topbar">
       <div>
-        <!-- Titre page -->
         <div class="page-title">Manage Posts</div>
-
-        <!-- Sous-titre -->
-        <div class="page-subtitle">Edit or remove forum posts</div>
+        <div class="page-subtitle">Edit, épingler ou supprimer les posts</div>
       </div>
-
-      <!-- Info admin connecté -->
       <div class="user-card">
         <span><?= $_SESSION['admin'] ?></span>
         <div class="avatar">AD</div>
       </div>
     </header>
 
-    <!-- PANEL PRINCIPAL -->
+    <?php if(isset($_GET['updated'])): ?>
+      <div style="background:#d4edda;border:1px solid #c3e6cb;border-radius:10px;padding:12px 20px;color:#155724;">
+        ✅ Post modifié avec succès.
+      </div>
+    <?php endif; ?>
+
     <section class="panel-card">
-
-      <!-- Header section -->
       <div class="panel-header">
-        <div>
-          <h2>Registered Posts</h2>
-          <p>Manage content and comments below.</p>
-        </div>
-
-        <!-- Bouton retour dashboard -->
+        <div><h2>Registered Posts</h2><p>Manage content and settings.</p></div>
         <a href="dashboard.php" class="btn btn-secondary">← Dashboard</a>
       </div>
 
-      <!-- ================= LISTE POSTS ================= -->
-      <?php foreach($posts as $post){ ?>
+      <?php foreach($posts as $post):
+        $postTags = $postModel->getPostTags($post['id']);
+        $history  = $postModel->getHistory($post['id']);
+      ?>
+      <div style="margin-bottom:32px;padding-bottom:24px;border-bottom:1px dashed var(--border);">
 
-      <!-- Bloc post -->
-      <div style="margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px dashed var(--border);">
+        <!-- Titre + badges -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+          <?php if($post['is_pinned']): ?>
+            <span style="background:#fff3cd;color:#856404;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">📌 Épinglé</span>
+          <?php endif; ?>
+          <h3 style="font-family:'Playfair Display',serif;color:var(--brown);margin:0;font-size:1.2rem;">
+            <?= htmlspecialchars($post['titre']) ?>
+          </h3>
+        </div>
 
-        <!-- Titre du post -->
-        <h3 style="font-family:'Playfair Display',serif; color:var(--brown); margin:0 0 16px 0; font-size:1.2rem;">
-          <?= $post['titre'] ?>
-        </h3>
-
-        <!-- Contenu du post -->
-        <p style="color:var(--text-muted); margin-bottom:16px; line-height:1.5;">
-          <?= nl2br(htmlspecialchars($post['contenu'])) ?>
-        </p>
-
-        <!-- Image du post (si existe) -->
-        <?php if($post['image']): ?>
-          <img src="../../assets/images/<?= $post['image'] ?>" width="150"
-               style="border-radius:12px; margin-bottom:16px; border:2px solid var(--nude);">
-          <br>
+        <!-- Tags -->
+        <?php if(!empty($postTags)): ?>
+          <div style="margin-bottom:8px;">
+            <?php foreach($postTags as $t): ?>
+              <span class="tag-badge">#<?= htmlspecialchars($t['nom']) ?></span>
+            <?php endforeach; ?>
+          </div>
         <?php endif; ?>
 
-        <!-- ACTIONS POST -->
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+        <!-- Scheduled -->
+        <?php if(!empty($post['scheduled_at'])): ?>
+          <div class="scheduled-info">🕐 Planifié : <?= date('d/m/Y H:i', strtotime($post['scheduled_at'])) ?></div>
+        <?php endif; ?>
 
-          <!-- Bouton modifier post -->
-          <a class="btn" href="editPost.php?id=<?= $post['id'] ?>">Edit</a>
+        <p style="color:var(--text-muted);margin:10px 0;line-height:1.5;">
+          <?= nl2br(htmlspecialchars(strip_tags($post['contenu']))) ?>
+        </p>
 
-          <!-- Bouton supprimer post -->
-          <a class="btn btn-delete"
-             href="../../controller/PostController.php?delete=<?= $post['id'] ?>"
-             onclick="return confirm('Delete this post?')">
-             Delete
+        <?php if($post['image']): ?>
+          <img src="../../assets/images/<?= $post['image'] ?>" width="150"
+               style="border-radius:12px;margin-bottom:12px;border:2px solid var(--nude);">
+        <?php endif; ?>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          <a class="btn" href="editPost.php?id=<?= $post['id'] ?>">✏️ Modifier</a>
+
+          <a class="pin-btn <?= $post['is_pinned']?'pinned':'' ?>"
+             href="../../controller/PostController.php?togglePin=<?= $post['id'] ?>">
+            <?= $post['is_pinned']?'📌 Désépingler':'📌 Épingler' ?>
           </a>
 
+          <a class="btn btn-delete"
+             href="../../controller/PostController.php?delete=<?= $post['id'] ?>"
+             onclick="return confirm('Supprimer ce post ?')">
+             🗑 Supprimer
+          </a>
         </div>
 
-        <!-- ================= COMMENTAIRES ================= -->
-        <h4 style="font-family:'Playfair Display',serif; color:var(--brown); margin:24px 0 12px 0; font-size:1.1rem;">
-          Commentaires :
-        </h4>
-
-        <?php
-        // Récupération des commentaires du post actuel
-        $comments = $postModel->getComments($post['id']);
-
-        // boucle commentaires
-        foreach($comments as $c){
-        ?>
-
-        <!-- COMMENT ITEM -->
-        <div class="comment-item">
-
-          <!-- contenu commentaire -->
-          <div class="comment-content">
-            <p style="margin:0; color:var(--dark);">
-              <?= htmlspecialchars($c['contenu']) ?>
-            </p>
+        <!-- Historique -->
+        <?php if(!empty($history)): ?>
+          <button class="history-toggle" onclick="toggleHistory(<?= $post['id'] ?>)">
+            🕓 Voir l'historique des modifications (<?= count($history) ?>)
+          </button>
+          <div class="history-box" id="hist-<?= $post['id'] ?>">
+            <?php foreach($history as $h): ?>
+              <div class="history-item">
+                <strong><?= date('d/m/Y H:i', strtotime($h['edited_at'])) ?></strong> —
+                Titre : <?= htmlspecialchars($h['titre']) ?>
+              </div>
+            <?php endforeach; ?>
           </div>
-
-          <!-- actions commentaire -->
-          <div class="comment-actions">
-
-            <!-- FORMULAIRE UPDATE COMMENT -->
-            <form action="../../controller/PostController.php" method="POST"
-                  style="display:flex; gap:8px; margin:0;">
-
-              <!-- id caché commentaire -->
-              <input type="hidden" name="id" value="<?= $c['id'] ?>">
-
-              <!-- champ modification -->
-              <input type="text" name="contenu" value="<?= $c['contenu'] ?>"
-                     style="padding:8px 12px; border-radius:10px; border:1px solid var(--border);">
-
-              <!-- bouton update -->
-              <button class="btn" name="updateComment" type="submit"
-                      style="padding:8px 14px; font-size:0.85rem;">
-                Modifier
-              </button>
-
-            </form>
-
-            <!-- bouton delete commentaire -->
-            <a class="btn btn-delete"
-               style="padding:8px 14px; font-size:0.85rem;"
-               href="../../controller/PostController.php?deleteComment=<?= $c['id'] ?>"
-               onclick="return confirm('Delete this comment?')">
-
-               Delete
-            </a>
-
-          </div>
-        </div>
-
-        <?php } // fin boucle comments ?>
+        <?php endif; ?>
 
       </div>
-
-      <?php } // fin boucle posts ?>
+      <?php endforeach; ?>
 
     </section>
-
   </main>
 </div>
-
+<script>
+function toggleHistory(id){
+  let box = document.getElementById('hist-'+id);
+  box.classList.toggle('open');
+}
+</script>
 </body>
 </html>

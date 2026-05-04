@@ -1,141 +1,331 @@
 <!DOCTYPE html>
-<!-- Déclaration du type de document HTML -->
-
 <html>
-<!-- Début du document HTML -->
-
 <head>
-    <!-- En-tête de la page (informations non visibles directement) -->
-
-    <title>Ajouter Post</title>
-    <!-- Titre affiché dans l’onglet du navigateur -->
-
-    <link rel="stylesheet" href="../../assets/css/style.css">
-    <!-- Lien vers le fichier CSS principal -->
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet">
-    <!-- Importation des polices Google Fonts -->
-
-    <style>
-    /* Style local pour afficher les erreurs */
-    .error{
-        color:red;              /* texte en rouge */
-        font-weight:bold;       /* texte en gras */
-        margin-bottom:10px;     /* espace en bas */
-    }
-    </style>
-
-    <script>
-    // ============================
-    // VALIDATION FORMULAIRE JS
-    // ============================
-
-    function validateForm(){
-
-        // récupérer le titre et supprimer les espaces inutiles
-        let titre = document.forms["f"]["titre"].value.trim();
-
-        // récupérer le contenu et supprimer les espaces inutiles
-        let contenu = document.forms["f"]["contenu"].value.trim();
-
-        // variable pour stocker les erreurs
-        let error = "";
-
-        // vérifier si titre est vide
-        if(titre == ""){
-            error += "❌ Titre obligatoire<br>";
-        }
-
-        // vérifier si contenu est vide
-        if(contenu == ""){
-            error += "❌ Contenu obligatoire<br>";
-        }
-
-        // vérifier si titre dépasse 3 mots
-        if(titre.split(" ").length > 3){
-            error += "❌ Titre max 3 mots<br>";
-        }
-
-        // vérifier si contenu dépasse 9 mots
-        if(contenu.split(" ").length > 9){
-            error += "❌ Contenu max 9 mots<br>";
-        }
-
-        // si erreurs existent
-        if(error != ""){
-            // afficher les erreurs dans la div errorBox
-            document.getElementById("errorBox").innerHTML = error;
-
-            // empêcher l’envoi du formulaire
-            return false;
-        }
-
-        // si tout est correct, autoriser l’envoi
-        return true;
-    }
-    </script>
-
+<title>Ajouter Post</title>
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet">
+<!-- Quill.js éditeur riche -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+.error{ color:red; font-weight:bold; margin-bottom:10px; }
+.schedule-box{
+  background:#fff8f0; border:1px solid #e8cfc1;
+  border-radius:10px; padding:14px; margin-top:15px;
+}
+.schedule-box label{ display:block; font-weight:600; margin-bottom:6px; color:#a67b5b; }
+.tags-grid{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;
+}
+.tag-check{
+  display:flex; align-items:center; gap:5px;
+  background:#f5f5f5; border:1px solid #ddd;
+  border-radius:20px; padding:5px 12px; cursor:pointer;
+  font-size:13px; user-select:none;
+}
+.tag-check input{ cursor:pointer; }
+.tag-check:hover{ border-color:#a67b5b; }
+/* Quill toolbar style */
+.ql-container{ border-radius:0 0 8px 8px; min-height:100px; }
+.ql-toolbar{ border-radius:8px 8px 0 0; }
+</style>
 </head>
-
 <body>
-<!-- Corps visible de la page -->
 
-<!-- HERO HEADER -->
 <header class="hero">
-    <!-- Section principale en haut de page -->
-    <h1>Créer un Post ✍️</h1>
-    <!-- Titre principal -->
+  <h1>Créer un Post ✍️</h1>
 </header>
 
-<!-- BOUTON RETOUR -->
 <div style="text-align:center; margin:20px 0;">
-    <!-- lien retour vers le forum -->
-    <a class="btn" href="index.php">⬅ Retour au forum</a>
+  <a class="btn" href="index.php">⬅ Retour au forum</a>
 </div>
 
-<!-- FORMULAIRE (CARTE) -->
-<div class="card" style="width:90%; max-width:500px; margin:20px auto; padding:25px;">
+<div class="card" style="width:90%; max-width:560px; margin:20px auto; padding:28px;">
 
-    <!-- zone où s’affichent les erreurs -->
-    <div id="errorBox" class="error"></div>
+  <div id="errorBox" class="error"></div>
 
-    <!-- FORMULAIRE D'AJOUT POST -->
-    <form name="f"
-          action="../../controller/PostController.php"
-          method="POST"
-          enctype="multipart/form-data"
-          onsubmit="return validateForm()">
+  <form name="f"
+        id="postForm"
+        action="../../controller/PostController.php"
+        method="POST"
+        enctype="multipart/form-data"
+        onsubmit="return prepareForm()">
 
-        <!-- champ titre -->
-        <label style="display:block; margin:12px 0 5px 0; font-weight:500;">
-            Titre
+    <!-- Titre -->
+    <label style="display:block; margin:12px 0 5px; font-weight:500;">Titre</label>
+    <input type="text" name="titre" id="titreInput" required>
+
+    <!-- Contenu via Quill -->
+    <label style="display:block; margin:16px 0 5px; font-weight:500;">Contenu</label>
+    <div id="quillEditor"></div>
+    <!-- Champ caché qui reçoit le HTML de Quill -->
+    <input type="hidden" name="contenu" id="contenuHidden">
+
+    <!-- Tags -->
+    <label style="display:block; margin:16px 0 5px; font-weight:500;">Tags (optionnel)</label>
+    <div class="tags-grid">
+      <?php
+      require_once "../../controller/PostController.php";
+      global $postModel;
+      $tags = $postModel->getAllTags();
+      foreach($tags as $tag){ ?>
+        <label class="tag-check">
+          <input type="checkbox" name="tags[]" value="<?= $tag['id'] ?>">
+          #<?= htmlspecialchars($tag['nom']) ?>
         </label>
-        <input type="text" name="titre" required>
-        <!-- input texte obligatoire -->
+      <?php } ?>
+    </div>
 
-        <!-- champ contenu -->
-        <label style="display:block; margin:12px 0 5px 0; font-weight:500;">
-            Contenu
-        </label>
-        <textarea name="contenu" rows="4" required></textarea>
-        <!-- zone de texte obligatoire -->
+    <!-- Image -->
+    <label style="display:block; margin:16px 0 5px; font-weight:500;">Image (optionnel)</label>
+    <input type="file" name="image" accept="image/*" onchange="previewImage(this)">
+    <img id="imgPreview" src="" alt="" style="display:none;width:100%;border-radius:10px;margin-top:8px;">
 
-        <!-- champ image -->
-        <label style="display:block; margin:12px 0 5px 0; font-weight:500;">
-            Image (optionnel)
-        </label>
-        <input type="file" name="image" accept="image/*">
-        <!-- upload image facultatif -->
+    <!-- Publication planifiée -->
+    <div class="schedule-box">
+      <label>🕐 Planifier la publication</label>
+      <input type="datetime-local" id="scheduled_at" name="scheduled_at" onchange="updateSchedulePreview()">
+      <small id="schedule-preview" style="display:block;margin-top:5px;color:#888;">Laisser vide = publication immédiate</small>
+    </div>
 
-        <!-- bouton submit -->
-        <button class="btn" type="submit" name="addPost"
-                style="width:100%; margin-top:20px;">
-            📤 Publier
-        </button>
+    <!-- Submit -->
+    <button class="btn" type="submit" name="addPost" style="width:100%; margin-top:20px; padding:12px;">
+      📤 Publier
+    </button>
 
-    </form>
-
+  </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+// Init Quill
+const quill = new Quill('#quillEditor', {
+  theme:'snow',
+  placeholder:'Rédigez votre post...',
+  modules:{
+    toolbar:[
+      ['bold','italic','underline'],
+      [{'list':'ordered'},{'list':'bullet'}],
+      ['link'],
+      ['clean']
+    ]
+  }
+});
+
+// Prévisualisation image
+function previewImage(input){
+  let preview = document.getElementById('imgPreview');
+  if(input.files && input.files[0]){
+    let reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display='block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Preview date planifiée
+function updateSchedulePreview(){
+  let val = document.getElementById('scheduled_at').value;
+  let preview = document.getElementById('schedule-preview');
+  if(val){
+    let d = new Date(val);
+    preview.textContent = '📅 Publication prévue le ' +
+      d.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) +
+      ' à ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    preview.style.color = '#a67b5b';
+  } else {
+    preview.textContent = 'Laisser vide = publication immédiate';
+    preview.style.color = '#888';
+  }
+}
+
+// Validation + copie contenu Quill
+function prepareForm(){
+  let titre   = document.getElementById('titreInput').value.trim();
+  let contenu = quill.getText().trim();
+  let error   = '';
+
+  if(titre == '') error += '❌ Titre obligatoire<br>';
+  if(contenu == '') error += '❌ Contenu obligatoire<br>';
+  if(titre.split(' ').length > 3) error += '❌ Titre max 3 mots<br>';
+
+  let scheduled = document.getElementById('scheduled_at').value;
+  if(scheduled != ''){
+    if(new Date(scheduled) <= new Date()) error += '❌ La date doit être dans le futur<br>';
+  }
+
+  if(error != ''){
+    document.getElementById('errorBox').innerHTML = error;
+    return false;
+  }
+
+  // Injecter HTML Quill dans le champ caché
+  document.getElementById('contenuHidden').value = quill.root.innerHTML;
+  return true;
+}
+</script>
+</body>
+</html><!DOCTYPE html>
+<html>
+<head>
+<title>Ajouter Post</title>
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Playfair+Display&display=swap" rel="stylesheet">
+<!-- Quill.js éditeur riche -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+.error{ color:red; font-weight:bold; margin-bottom:10px; }
+.schedule-box{
+  background:#fff8f0; border:1px solid #e8cfc1;
+  border-radius:10px; padding:14px; margin-top:15px;
+}
+.schedule-box label{ display:block; font-weight:600; margin-bottom:6px; color:#a67b5b; }
+.tags-grid{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;
+}
+.tag-check{
+  display:flex; align-items:center; gap:5px;
+  background:#f5f5f5; border:1px solid #ddd;
+  border-radius:20px; padding:5px 12px; cursor:pointer;
+  font-size:13px; user-select:none;
+}
+.tag-check input{ cursor:pointer; }
+.tag-check:hover{ border-color:#a67b5b; }
+/* Quill toolbar style */
+.ql-container{ border-radius:0 0 8px 8px; min-height:100px; }
+.ql-toolbar{ border-radius:8px 8px 0 0; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Créer un Post ✍️</h1>
+</header>
+
+<div style="text-align:center; margin:20px 0;">
+  <a class="btn" href="index.php">⬅ Retour au forum</a>
+</div>
+
+<div class="card" style="width:90%; max-width:560px; margin:20px auto; padding:28px;">
+
+  <div id="errorBox" class="error"></div>
+
+  <form name="f"
+        id="postForm"
+        action="../../controller/PostController.php"
+        method="POST"
+        enctype="multipart/form-data"
+        onsubmit="return prepareForm()">
+
+    <!-- Titre -->
+    <label style="display:block; margin:12px 0 5px; font-weight:500;">Titre</label>
+    <input type="text" name="titre" id="titreInput" required>
+
+    <!-- Contenu via Quill -->
+    <label style="display:block; margin:16px 0 5px; font-weight:500;">Contenu</label>
+    <div id="quillEditor"></div>
+    <!-- Champ caché qui reçoit le HTML de Quill -->
+    <input type="hidden" name="contenu" id="contenuHidden">
+
+    <!-- Tags -->
+    <label style="display:block; margin:16px 0 5px; font-weight:500;">Tags (optionnel)</label>
+    <div class="tags-grid">
+      <?php
+      require_once "../../controller/PostController.php";
+      global $postModel;
+      $tags = $postModel->getAllTags();
+      foreach($tags as $tag){ ?>
+        <label class="tag-check">
+          <input type="checkbox" name="tags[]" value="<?= $tag['id'] ?>">
+          #<?= htmlspecialchars($tag['nom']) ?>
+        </label>
+      <?php } ?>
+    </div>
+
+    <!-- Image -->
+    <label style="display:block; margin:16px 0 5px; font-weight:500;">Image (optionnel)</label>
+    <input type="file" name="image" accept="image/*" onchange="previewImage(this)">
+    <img id="imgPreview" src="" alt="" style="display:none;width:100%;border-radius:10px;margin-top:8px;">
+
+    <!-- Publication planifiée -->
+    <div class="schedule-box">
+      <label>🕐 Planifier la publication</label>
+      <input type="datetime-local" id="scheduled_at" name="scheduled_at" onchange="updateSchedulePreview()">
+      <small id="schedule-preview" style="display:block;margin-top:5px;color:#888;">Laisser vide = publication immédiate</small>
+    </div>
+
+    <!-- Submit -->
+    <button class="btn" type="submit" name="addPost" style="width:100%; margin-top:20px; padding:12px;">
+      📤 Publier
+    </button>
+
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+// Init Quill
+const quill = new Quill('#quillEditor', {
+  theme:'snow',
+  placeholder:'Rédigez votre post...',
+  modules:{
+    toolbar:[
+      ['bold','italic','underline'],
+      [{'list':'ordered'},{'list':'bullet'}],
+      ['link'],
+      ['clean']
+    ]
+  }
+});
+
+// Prévisualisation image
+function previewImage(input){
+  let preview = document.getElementById('imgPreview');
+  if(input.files && input.files[0]){
+    let reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display='block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Preview date planifiée
+function updateSchedulePreview(){
+  let val = document.getElementById('scheduled_at').value;
+  let preview = document.getElementById('schedule-preview');
+  if(val){
+    let d = new Date(val);
+    preview.textContent = '📅 Publication prévue le ' +
+      d.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) +
+      ' à ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    preview.style.color = '#a67b5b';
+  } else {
+    preview.textContent = 'Laisser vide = publication immédiate';
+    preview.style.color = '#888';
+  }
+}
+
+// Validation + copie contenu Quill
+function prepareForm(){
+  let titre   = document.getElementById('titreInput').value.trim();
+  let contenu = quill.getText().trim();
+  let error   = '';
+
+  if(titre == '') error += '❌ Titre obligatoire<br>';
+  if(contenu == '') error += '❌ Contenu obligatoire<br>';
+  if(titre.split(' ').length > 3) error += '❌ Titre max 3 mots<br>';
+
+  let scheduled = document.getElementById('scheduled_at').value;
+  if(scheduled != ''){
+    if(new Date(scheduled) <= new Date()) error += '❌ La date doit être dans le futur<br>';
+  }
+
+  if(error != ''){
+    document.getElementById('errorBox').innerHTML = error;
+    return false;
+  }
+
+  // Injecter HTML Quill dans le champ caché
+  document.getElementById('contenuHidden').value = quill.root.innerHTML;
+  return true;
+}
+</script>
 </body>
 </html>
