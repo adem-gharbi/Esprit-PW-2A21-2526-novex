@@ -27,4 +27,14 @@ try {
 $pdo->exec("SET NAMES utf8mb4");
 $pdo->exec("SET time_zone = '+01:00'");   // Change selon ton pays (Tunisie = +01:00)
 
+// ==================== CONFIGURATION GOOGLE OAUTH ====================
+// On charge les clés depuis un fichier non suivi par Git
+if (file_exists(__DIR__ . '/credentials.php')) {
+    require_once __DIR__ . '/credentials.php';
+} else {
+    define('GOOGLE_CLIENT_ID', 'VOTRE_CLIENT_ID');
+    define('GOOGLE_CLIENT_SECRET', 'VOTRE_CLIENT_SECRET');
+}
+define('GOOGLE_REDIRECT_URI', 'http://localhost/Esprit-PW-2A21-2526-novex/Controller/UserController.php?action=googleCallback');
+
 ?>

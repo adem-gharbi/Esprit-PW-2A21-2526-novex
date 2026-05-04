@@ -148,9 +148,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
                     } 
                     else if (form.getAttribute('action').includes('loginClient')) {
-                        if (data.includes("success_client")) {
+                        if (data.includes("error_blocked")) {
+                            alert("Accès refusé : Votre compte a été bloqué par un administrateur.");
+                        } else if (data.includes("success_client")) {
                             alert("Connexion Client réussie !");
-                            window.location.href = "profile.html";
+                            window.location.href = "profile.php";
                         } else {
                             alert("Erreur côté Client : " + data);
                         }

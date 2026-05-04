@@ -1,15 +1,20 @@
 <?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../Model/Client.php';
 require_once __DIR__ . '/../Model/Admin.php';
 
-class UserController {
-    public function addClient($client, $photo_base64 = null) {
+class UserController
+{
+    public function addClient($client, $photo_base64 = null)
+    {
         global $pdo;
         try {
             $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             $key = substr(str_shuffle($chars), 0, 3) . '-' . substr(str_shuffle($chars), 0, 3) . '-' . substr(str_shuffle($chars), 0, 3);
-            
+
             // --- GESTION PHOTO WEBRTC ---
             $photoPath = null;
             if ($photo_base64 && strpos($photo_base64, 'data:image') === 0) {
@@ -17,11 +22,11 @@ class UserController {
                 list($type, $data) = explode(';', $photo_base64);
                 list(, $data) = explode(',', $data);
                 $data = base64_decode($data);
-                
+
                 // Forcer le répertoire de destination
                 $uploadDir = __DIR__ . '/../uploads/profiles/';
                 $filename = 'profile_' . time() . '_' . uniqid() . '.png';
-                
+
                 if (file_put_contents($uploadDir . $filename, $data)) {
                     $photoPath = 'uploads/profiles/' . $filename;
                 }
@@ -41,7 +46,7 @@ class UserController {
                 'recovery_key' => $key,
                 'profile_photo' => $photoPath
             ]);
-            
+
             return 'success_client|' . $key;
         } catch (PDOException $e) {
             echo "Erreur SQL : " . $e->getMessage();
@@ -49,7 +54,8 @@ class UserController {
         }
     }
 
-    public function addAdmin($admin_obj, $photo_base64 = null) {
+    public function addAdmin($admin_obj, $photo_base64 = null)
+    {
         global $pdo;
         try {
             // --- GESTION PHOTO WEBRTC POUR ADMIN ---
@@ -58,10 +64,10 @@ class UserController {
                 list($type, $data) = explode(';', $photo_base64);
                 list(, $data) = explode(',', $data);
                 $data = base64_decode($data);
-                
+
                 $uploadDir = __DIR__ . '/../uploads/profiles/';
                 $filename = 'admin_' . time() . '_' . uniqid() . '.png';
-                
+
                 if (file_put_contents($uploadDir . $filename, $data)) {
                     $photoPath = 'uploads/profiles/' . $filename;
                 }
@@ -78,7 +84,7 @@ class UserController {
                 'role' => $admin_obj->getRole(),
                 'profile_photo' => $photoPath
             ]);
-            
+
             return 'success_admin_created';
         } catch (PDOException $e) {
             echo "Erreur SQL Admin : " . $e->getMessage();
@@ -86,7 +92,8 @@ class UserController {
         }
     }
 
-    public function getAllClients() {
+    public function getAllClients()
+    {
         global $pdo;
         try {
             $query = $pdo->prepare('SELECT * FROM client ORDER BY id DESC');
@@ -97,7 +104,8 @@ class UserController {
         }
     }
 
-    public function getClientById($id) {
+    public function getClientById($id)
+    {
         global $pdo;
         try {
             $query = $pdo->prepare('SELECT * FROM client WHERE id = :id');
@@ -108,7 +116,8 @@ class UserController {
         }
     }
 
-    public function updateClient($id, $fullname, $email, $birthdate, $tel, $sexe) {
+    public function updateClient($id, $fullname, $email, $birthdate, $tel, $sexe)
+    {
         global $pdo;
         try {
             $query = $pdo->prepare(
@@ -128,7 +137,8 @@ class UserController {
         }
     }
 
-    public function deleteClient($id) {
+    public function deleteClient($id)
+    {
         global $pdo;
         try {
             $query = $pdo->prepare('DELETE FROM client WHERE id = :id');
@@ -139,12 +149,31 @@ class UserController {
         }
     }
 
-    public function loginClient($email, $password) {
+    public function toggleClientStatus($id, $status)
+    {
+        global $pdo;
+        try {
+            $query = $pdo->prepare('UPDATE client SET status = :status WHERE id = :id');
+            $query->execute(['status' => $status, 'id' => $id]);
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public function loginClient($email, $password)
+    {
         global $pdo;
         try {
             $queryClient = $pdo->prepare('SELECT * FROM client WHERE email = :email AND password = :password');
             $queryClient->execute(['email' => $email, 'password' => $password]);
-            if ($queryClient->rowCount() > 0) {
+            $client = $queryClient->fetch();
+            
+            if ($client) {
+                if (isset($client['status']) && $client['status'] === 'blocked') {
+                    return 'error_blocked';
+                }
+                $_SESSION['client_email'] = $email; // Démarrage de session client
                 return 'success_client';
             }
             return 'Mot de passe ou adresse e-mail incorect.';
@@ -153,16 +182,17 @@ class UserController {
         }
     }
 
-    public function loginAdmin($id, $email, $password) {
+    public function loginAdmin($id, $email, $password)
+    {
         global $pdo;
         try {
             $queryAdmin = $pdo->prepare('SELECT * FROM admin WHERE id = :id AND email = :email AND password = :password');
             $queryAdmin->execute([
-                'id' => trim($id), 
-                'email' => trim($email), 
+                'id' => trim($id),
+                'email' => trim($email),
                 'password' => $password
             ]);
-            
+
             $admin = $queryAdmin->fetch();
             if ($admin) {
                 // Démarre la session au niveau admin
@@ -175,7 +205,7 @@ class UserController {
                 return 'success_admin';
             }
             // En cas d'erreur, on peut renvoyer un message plus précis si les données sont vides
-            if(empty($id) || empty($email) || empty($password)) {
+            if (empty($id) || empty($email) || empty($password)) {
                 return "Veuillez remplir tous les champs.";
             }
             return "Identifiants Administrateur incorrects (ID: $id, Email: $email). Vérifiez votre base de données.";
@@ -184,7 +214,8 @@ class UserController {
         }
     }
 
-    public function getAdminById($id) {
+    public function getAdminById($id)
+    {
         global $pdo;
         try {
             $query = $pdo->prepare('SELECT * FROM admin WHERE id = :id');
@@ -195,7 +226,8 @@ class UserController {
         }
     }
 
-    public function getAllAdmins() {
+    public function getAllAdmins()
+    {
         global $pdo;
         try {
             $query = $pdo->prepare('SELECT * FROM admin ORDER BY id DESC');
@@ -206,7 +238,8 @@ class UserController {
         }
     }
 
-    public function forgotPassword($fullname, $email) {
+    public function forgotPassword($fullname, $email)
+    {
         global $pdo;
         try {
             // Chercher d'abord dans client
@@ -250,7 +283,8 @@ class UserController {
         }
     }
 
-    public function forgotPasswordClient($email, $recovery_key) {
+    public function forgotPasswordClient($email, $recovery_key)
+    {
         global $pdo;
         try {
             $query = $pdo->prepare('SELECT password FROM client WHERE email = :email AND recovery_key = :recovery_key');
@@ -270,7 +304,8 @@ class UserController {
             return 'Erreur DB: ' . $e->getMessage();
         }
     }
-    public function forgotPasswordClientFaceID($email, $faceid_token) {
+    public function forgotPasswordClientFaceID($email, $faceid_token)
+    {
         global $pdo;
         try {
             if ($faceid_token !== "AUTHORIZED_FACE_" . $email) {
@@ -291,7 +326,8 @@ class UserController {
         }
     }
 
-    public function getPhotoByEmail($email) {
+    public function getPhotoByEmail($email)
+    {
         global $pdo;
         try {
             $query = $pdo->prepare('SELECT profile_photo FROM client WHERE email = :email LIMIT 1');
@@ -307,6 +343,169 @@ class UserController {
             return 'erreur_sql';
         }
     }
+
+    public function getClientByEmail($email)
+    {
+        global $pdo;
+        try {
+            $query = $pdo->prepare('SELECT * FROM client WHERE email = :email LIMIT 1');
+            $query->execute(['email' => $email]);
+            return $query->fetch();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public function editClientProfile($email, $fullname, $birthdate, $tel, $sexe, $password, $photo_base64 = null)
+    {
+        global $pdo;
+        try {
+            // --- GESTION PHOTO WEBRTC ---
+            $photoPath = null;
+            if ($photo_base64 && strpos($photo_base64, 'data:image') === 0) {
+                list($type, $data) = explode(';', $photo_base64);
+                list(, $data) = explode(',', $data);
+                $data = base64_decode($data);
+
+                $uploadDir = __DIR__ . '/../uploads/profiles/';
+                $filename = 'profile_' . time() . '_' . uniqid() . '.png';
+
+                if (file_put_contents($uploadDir . $filename, $data)) {
+                    $photoPath = 'uploads/profiles/' . $filename;
+                }
+            }
+
+            if (!empty($password)) {
+                $query = $pdo->prepare('UPDATE client SET fullname = :fullname, birthdate = :birthdate, tel = :tel, sexe = :sexe, password = :password WHERE email = :email');
+                $query->execute([
+                    'fullname' => $fullname,
+                    'birthdate' => $birthdate,
+                    'tel' => $tel,
+                    'sexe' => $sexe,
+                    'password' => $password,
+                    'email' => $email
+                ]);
+            } else {
+                $query = $pdo->prepare('UPDATE client SET fullname = :fullname, birthdate = :birthdate, tel = :tel, sexe = :sexe WHERE email = :email');
+                $query->execute([
+                    'fullname' => $fullname,
+                    'birthdate' => $birthdate,
+                    'tel' => $tel,
+                    'sexe' => $sexe,
+                    'email' => $email
+                ]);
+            }
+
+            // Si une nouvelle photo locale a été prise, on la met à jour
+            if ($photoPath !== null) {
+                $updatePhoto = $pdo->prepare('UPDATE client SET profile_photo = :photo WHERE email = :email');
+                $updatePhoto->execute(['photo' => $photoPath, 'email' => $email]);
+            }
+
+            return 'success_edit_profile';
+        } catch (PDOException $e) {
+            return 'erreur_sql: ' . $e->getMessage();
+        }
+    }
+
+    public function loginGoogle()
+    {
+        $url = "https://accounts.google.com/o/oauth2/v2/auth?" . http_build_query([
+            'client_id' => GOOGLE_CLIENT_ID,
+            'redirect_uri' => GOOGLE_REDIRECT_URI,
+            'response_type' => 'code',
+            'scope' => 'email profile',
+            'access_type' => 'online'
+        ]);
+        header('Location: ' . $url);
+        exit();
+    }
+
+    public function googleCallback($code)
+    {
+        global $pdo;
+
+        // 1. Échanger le code contre un token
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://oauth2.googleapis.com/token');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'client_id' => GOOGLE_CLIENT_ID,
+            'client_secret' => GOOGLE_CLIENT_SECRET,
+            'redirect_uri' => GOOGLE_REDIRECT_URI,
+            'grant_type' => 'authorization_code',
+            'code' => $code
+        ]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $tokenData = json_decode($response, true);
+
+        if (isset($tokenData['access_token'])) {
+            $accessToken = $tokenData['access_token'];
+
+            // 2. Récupérer les infos utilisateur
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://www.googleapis.com/oauth2/v2/userinfo');
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $accessToken]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $userInfoResponse = curl_exec($ch);
+            curl_close($ch);
+
+            $userInfo = json_decode($userInfoResponse, true);
+
+            if (isset($userInfo['email'])) {
+                $email = $userInfo['email'];
+                $fullname = $userInfo['name'];
+                $photo = $userInfo['picture'] ?? null;
+
+                try {
+                    // Vérifier si le client existe
+                    $query = $pdo->prepare('SELECT * FROM client WHERE email = :email');
+                    $query->execute(['email' => $email]);
+                    $client = $query->fetch();
+
+                    if (!$client) {
+                        // Créer le client avec des valeurs par défaut
+                        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                        $key = substr(str_shuffle($chars), 0, 3) . '-' . substr(str_shuffle($chars), 0, 3) . '-' . substr(str_shuffle($chars), 0, 3);
+                        $defaultPassword = substr(str_shuffle($chars), 0, 8); // Mot de passe aléatoire généré
+
+                        $insert = $pdo->prepare('INSERT INTO client (fullname, email, birthdate, tel, sexe, password, recovery_key, profile_photo) VALUES (:fullname, :email, :birthdate, :tel, :sexe, :password, :recovery_key, :profile_photo)');
+                        $insert->execute([
+                            'fullname' => $fullname,
+                            'email' => $email,
+                            'birthdate' => '2000-01-01', // Valeur par défaut
+                            'tel' => '00000000',         // Valeur par défaut
+                            'sexe' => 'Inconnu',         // Valeur par défaut
+                            'password' => $defaultPassword,
+                            'recovery_key' => $key,
+                            'profile_photo' => $photo
+                        ]);
+                    } else if (!empty($photo) && (empty($client['profile_photo']) || $client['profile_photo'] === 'erreur_no_photo')) {
+                        // Mettre à jour la photo si elle est manquante dans la DB mais fournie par Google
+                        $update = $pdo->prepare('UPDATE client SET profile_photo = :photo WHERE email = :email');
+                        $update->execute(['photo' => $photo, 'email' => $email]);
+                    }
+
+                    // Créer la session pour le client
+                    $_SESSION['client_email'] = $email;
+
+                    // Redirection vers le profil dynamique
+                    header('Location: ../view/profile.php');
+                    exit();
+                } catch (PDOException $e) {
+                    echo "Erreur BDD : " . $e->getMessage();
+                }
+            } else {
+                echo "Erreur lors de la récupération des informations Google.";
+            }
+        } else {
+            echo "Erreur d'authentification Google (Token invalide ou expiré).";
+        }
+    }
+
 }
 
 // Routeur basique
@@ -396,7 +595,12 @@ if (isset($_GET['action'])) {
     } else if ($_GET['action'] == 'deleteUser') {
         if (isset($_GET['id'])) {
             $userController->deleteClient($_GET['id']);
-            // Redirection vers la liste des utilisateurs après suppression
+            header('Location: ../view/admin/users.php');
+            exit();
+        }
+    } else if ($_GET['action'] == 'toggleStatus') {
+        if (isset($_GET['id']) && isset($_GET['status'])) {
+            $userController->toggleClientStatus($_GET['id'], $_GET['status']);
             header('Location: ../view/admin/users.php');
             exit();
         }
@@ -405,6 +609,38 @@ if (isset($_GET['action'])) {
             $result = $userController->forgotPassword($_POST['fullname'], $_POST['email']);
             echo $result;
         }
+    } else if ($_GET['action'] == 'loginGoogle') {
+        $userController->loginGoogle();
+    } else if ($_GET['action'] == 'googleCallback') {
+        if (isset($_GET['code'])) {
+            $userController->googleCallback($_GET['code']);
+        } else {
+            echo "Erreur : Code Google manquant.";
+        }
+    } else if ($_GET['action'] == 'editProfile') {
+        if (isset($_SESSION['client_email']) && isset($_POST['fullname'], $_POST['birthdate'], $_POST['tel'], $_POST['sexe'])) {
+            $password = isset($_POST['password']) ? $_POST['password'] : '';
+            $photo_base64 = isset($_POST['photo_base64']) ? $_POST['photo_base64'] : null;
+            $result = $userController->editClientProfile($_SESSION['client_email'], $_POST['fullname'], $_POST['birthdate'], $_POST['tel'], $_POST['sexe'], $password, $photo_base64);
+            echo $result;
+        } else {
+            echo "Erreur d'accès ou paramètres manquants.";
+        }
+    } else if ($_GET['action'] == 'logoutClient') {
+        unset($_SESSION['client_email']);
+        header('Location: ../view/login.html');
+        exit();
+    } else if ($_GET['action'] == 'changeLanguage') {
+        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en', 'ar'])) {
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+        // Rediriger vers la page précédente ou vers le login par défaut
+        $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '../view/login.html';
+        header('Location: ' . $referer);
+        exit();
     }
 }
 ?>

@@ -8,63 +8,73 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <meta name="description" content="Connectez-vous à votre compte utilisateur.">
     <style>
-        .switch-bubble {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(158, 179, 132, 0.1);
-            color: var(--color-accent);
-            padding: 5px 15px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .switch-bubble:hover {
-            background: var(--color-accent);
-            color: white;
-        }
+        .lang-switcher { position: absolute; top: 20px; right: 20px; z-index: 100; }
+        
+        /* RTL overrides */
+        html[dir="rtl"] .lang-switcher { right: auto; left: 20px; }
+        html[dir="rtl"] .auth-wrapper { text-align: right; }
+        html[dir="rtl"] .form-control { text-align: right; }
+        html[dir="rtl"] .forgot-pwd-container { text-align: left !important; }
     </style>
 </head>
 
 <body>
+    
+    <!-- Language Switcher -->
+    <div class="lang-switcher">
+        <select onchange="changeLanguage(this.value)" style="padding: 5px; border-radius: 5px; background: white; border: 1px solid #ccc; font-size: 1rem;">
+            <option value="fr">🇫🇷 FR</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="ar">🇸🇦 AR</option>
+        </select>
+    </div>
 
     <div class="auth-wrapper">
         <div class="card">
             <div class="card-header">
-                <h2>Bon retour</h2>
-                <p>Veuillez vous connecter pour continuer</p>
+                <h2 data-i18n="welcome_back">Bon retour</h2>
+                <p data-i18n="please_login">Veuillez vous connecter pour continuer</p>
             </div>
 
-            <!-- Note: Action pointe vers le contrôleur PHP loginClient -->
-            <form action="../Controller/UserController.php?action=loginClient" method="POST" novalidate>
+            <form id="loginForm" action="../Controller/UserController.php?action=loginClient" method="POST">
                 <div class="form-group">
-                    <label for="email">Adresse Email</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="exemple@domaine.com">
+                    <label for="email" data-i18n="email_address">Adresse Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="john@exemple.com" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
-                    <div style="text-align: right; margin-top: 5px;">
-                        <a href="forgot_password_client.html" style="font-size: 0.85rem; color: var(--color-accent); text-decoration: none;">Mot de passe oublié ?</a>
+                    <label for="password" data-i18n="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <div class="forgot-pwd-container" style="text-align: right; margin-top: 5px;">
+                        <a href="forgot_password_client.html" class="link-small" style="font-size: 0.85rem; color: var(--color-accent); text-decoration: none;" data-i18n="forgot_password">Mot de passe oublié ?</a>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-accent">Se connecter</button>
+                <button type="submit" class="btn btn-accent" data-i18n="login_btn">Se connecter</button>
+                
+                <div style="text-align: center; margin: 15px 0; font-size: 0.9rem; color: #888; position: relative;">
+                    <span style="background: white; padding: 0 10px; z-index: 1; position: relative;" data-i18n="or">OU</span>
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #eee; z-index: 0;"></div>
+                </div>
+
+                <a href="../Controller/UserController.php?action=loginGoogle" class="btn" style="background-color: white; color: #444; border: 1px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; text-decoration: none; font-weight: 500; transition: background 0.3s;">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 20px; height: 20px;">
+                    <span data-i18n="continue_google">Continuer avec Google</span>
+                </a>
             </form>
 
             <div class="auth-footer">
-                <p>Nouveau ici ? <a href="register.html">Créer un compte</a></p>
-                <div style="margin-top: 15px;">
-                    <a href="login_admin.html" class="btn btn-outline" style="padding: 10px; display: inline-block; width: 100%; box-sizing: border-box;">⚙️ Se connecter en tant qu'Administrateur</a>
+                <p><span data-i18n="new_here">Nouveau ici ?</span> <a href="register.html" data-i18n="create_account">Créer un compte</a></p>
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <a href="login_admin.html" style="color: #666; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;" data-i18n="login_as_admin">
+                        ⚙️ Se connecter en tant qu'Administrateur
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="assets/js/i18n.js"></script>
     <script src="assets/js/validation.js"></script>
 </body>
 

@@ -11,6 +11,14 @@ $clients = $userController->getAllClients();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Utilisateurs | Projet Écologique</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .lang-switcher { margin-left: 20px; z-index: 100; display: inline-block; }
+        
+        /* RTL overrides for Admin */
+        html[dir="rtl"] .admin-layout { flex-direction: row-reverse; }
+        html[dir="rtl"] .admin-header { flex-direction: row-reverse; }
+        html[dir="rtl"] .admin-table th, html[dir="rtl"] .admin-table td { text-align: right; }
+    </style>
     <script>
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -26,20 +34,30 @@ $clients = $userController->getAllClients();
                 <h2>EcoAdmin</h2>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.php" class="nav-item">Tableau de bord</a>
-                <a href="users.php" class="nav-item active">Utilisateurs</a>
-                <a href="settings.php" class="nav-item">Paramètres</a>
-                <a style="margin-top: auto;" href="../login.html" class="nav-item logout">Déconnexion</a>
+                <a href="dashboard.php" class="nav-item" data-i18n="nav_dashboard">Tableau de bord</a>
+                <a href="users.php" class="nav-item active" data-i18n="nav_users">Utilisateurs</a>
+                <a href="settings.php" class="nav-item" data-i18n="nav_settings">Paramètres</a>
+                <a style="margin-top: auto;" href="../login.html" class="nav-item logout" data-i18n="nav_logout">Déconnexion</a>
             </nav>
         </aside>
 
         <!-- Main Content -->
         <main class="admin-main">
             <header class="admin-header">
-                <h1>Liste complète des Utilisateurs</h1>
-                <div class="admin-profile">
-                    <span>Admin</span>
-                    <div class="profile-avatar-small">A</div>
+                <h1 data-i18n="all_users_list">Liste complète des Utilisateurs</h1>
+                <div style="display:flex; align-items:center;">
+                    <!-- Language Switcher inside header -->
+                    <div class="lang-switcher">
+                        <select onchange="changeLanguage(this.value)" style="padding: 5px; border-radius: 5px; background: white; border: 1px solid #ccc; font-size: 1rem;">
+                            <option value="fr">🇫🇷 FR</option>
+                            <option value="en">🇬🇧 EN</option>
+                            <option value="ar">🇸🇦 AR</option>
+                        </select>
+                    </div>
+                    <div class="admin-profile" style="margin-left: 15px;">
+                        <span data-i18n="admin">Admin</span>
+                        <div class="profile-avatar-small">A</div>
+                    </div>
                 </div>
             </header>
 
@@ -49,12 +67,13 @@ $clients = $userController->getAllClients();
                         <thead>
                             <tr>
                                 <th>#ID</th>
-                                <th style="width: 60px;">Photo</th>
-                                <th>Nom Complet</th>
-                                <th>Email</th>
-                                <th>Téléphone</th>
-                                <th>Sexe</th>
-                                <th>Actions</th>
+                                <th style="width: 60px;" data-i18n="photo">Photo</th>
+                                <th data-i18n="fullname">Nom Complet</th>
+                                <th data-i18n="email_address">Email</th>
+                                <th data-i18n="phone">Téléphone</th>
+                                <th data-i18n="gender">Sexe</th>
+                                <th data-i18n="status">Statut</th>
+                                <th data-i18n="actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,15 +92,29 @@ $clients = $userController->getAllClients();
                                 <td><?= htmlspecialchars($c['tel']) ?></td>
                                 <td><?= htmlspecialchars($c['sexe']) ?></td>
                                 <td>
-                                    <a href="editUser.php?id=<?= $c['id'] ?>" class="btn btn-outline" style="padding: 5px 15px; font-size: 0.85em;">Modifier</a>
-                                    <a href="../../Controller/UserController.php?action=deleteUser&id=<?= $c['id'] ?>" class="btn btn-outline" style="padding: 5px 15px; font-size: 0.85em; background-color: #ff4d4d; color: white; border-color: #ff4d4d;" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">Supprimer</a>
+                                    <?php if (isset($c['status']) && $c['status'] === 'blocked'): ?>
+                                        <span style="background-color: #ffcccc; color: #cc0000; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">Bloqué ❌</span>
+                                    <?php else: ?>
+                                        <span style="background-color: #ccffcc; color: #008000; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">Actif ✅</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <a href="editUser.php?id=<?= $c['id'] ?>" class="btn btn-outline" style="padding: 5px 15px; font-size: 0.85em;" data-i18n="edit">Modifier</a>
+                                    
+                                    <?php if (isset($c['status']) && $c['status'] === 'blocked'): ?>
+                                        <a href="../../Controller/UserController.php?action=toggleStatus&id=<?= $c['id'] ?>&status=active" class="btn btn-outline" style="padding: 5px 15px; font-size: 0.85em; background-color: #28a745; color: white; border-color: #28a745;">Débloquer</a>
+                                    <?php else: ?>
+                                        <a href="../../Controller/UserController.php?action=toggleStatus&id=<?= $c['id'] ?>&status=blocked" class="btn btn-outline" style="padding: 5px 15px; font-size: 0.85em; background-color: #ff9800; color: white; border-color: #ff9800;">Bloquer</a>
+                                    <?php endif; ?>
+
+                                    <a href="../../Controller/UserController.php?action=deleteUser&id=<?= $c['id'] ?>" class="btn btn-outline" style="padding: 5px 15px; font-size: 0.85em; background-color: #ff4d4d; color: white; border-color: #ff4d4d;" onclick="return confirm(getTranslation('confirm_delete') || 'Êtes-vous sûr de vouloir supprimer cet utilisateur ?');" data-i18n="delete">Supprimer</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                             
                             <?php if (count($clients) === 0): ?>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 20px;">Aucun utilisateur trouvé.</td>
+                                <td colspan="8" style="text-align: center; padding: 20px;" data-i18n="no_users_found">Aucun utilisateur trouvé.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -91,6 +124,14 @@ $clients = $userController->getAllClients();
         </main>
     </div>
 
+    <script src="../assets/js/i18n.js"></script>
+    <script>
+        // Helper function for confirm translation
+        function getTranslation(key) {
+            const currentLang = localStorage.getItem('lang') || 'fr';
+            return translations[currentLang] ? translations[currentLang][key] : null;
+        }
+    </script>
     <script src="../assets/js/theme.js"></script>
 </body>
 </html>

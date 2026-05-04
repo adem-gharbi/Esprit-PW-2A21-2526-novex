@@ -24,12 +24,18 @@
             <form action="../Controller/UserController.php?action=registerAdmin" method="POST" novalidate>
                 <div class="form-group">
                     <label for="fullname">Nom de l'Administrateur</label>
-                    <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Jean Dupont (Direction)">
+                    <div class="input-with-voice">
+                        <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Jean Dupont (Direction)">
+                        <button class="voice-btn" data-target="fullname" title="Saisie vocale">🎤</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Adresse Email Professionnelle</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="admin@projet-ecologique.com">
+                    <div class="input-with-voice">
+                        <input type="email" id="email" name="email" class="form-control" placeholder="admin@projet-ecologique.com">
+                        <button class="voice-btn" data-target="email" title="Saisie vocale">🎤</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -70,6 +76,7 @@
     </div>
 
     <script src="assets/js/validation.js"></script>
+    <script src="assets/js/voice_input.js"></script>
 </body>
 
 </html>

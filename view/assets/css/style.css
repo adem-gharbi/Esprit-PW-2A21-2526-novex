@@ -169,6 +169,49 @@ body {
   box-shadow: 0 0 0 3px rgba(158, 179, 132, 0.2);
 }
 
+/* Voice Input Styles */
+.input-with-voice {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.voice-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #888;
+  transition: var(--transition);
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-btn:hover {
+  color: var(--color-accent);
+  transform: scale(1.1);
+}
+
+.voice-btn.listening {
+  color: #f44336;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+html[dir="rtl"] .voice-btn {
+  right: auto;
+  left: 12px;
+}
+
 /* Buttons */
 .btn {
   display: inline-block;

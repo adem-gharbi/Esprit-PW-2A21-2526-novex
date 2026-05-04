@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Helper pour la traduction
+    function getThemeTranslation(key, defaultText) {
+        if (typeof translations !== 'undefined' && localStorage.getItem('lang')) {
+            const currentLang = localStorage.getItem('lang');
+            if (translations[currentLang] && translations[currentLang][key]) {
+                return translations[currentLang][key];
+            }
+        }
+        return defaultText;
+    }
+
     // Check initial theme from localStorage
     const savedTheme = localStorage.getItem('theme') || 'light';
     if (savedTheme === 'dark') {
@@ -10,9 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (themeToggleBtn) {
         // Init visual state of button based on current theme
         if (savedTheme === 'dark') {
-            themeToggleBtn.textContent = "Passer en mode Clair ☀️";
+            themeToggleBtn.textContent = getThemeTranslation('switch_light', "Passer en mode Clair ☀️");
             themeToggleBtn.classList.remove('btn-outline');
             themeToggleBtn.classList.add('btn-accent');
+        } else {
+            themeToggleBtn.textContent = getThemeTranslation('switch_dark', "Passer en mode Sombre 🌙");
         }
 
         themeToggleBtn.addEventListener('click', (e) => {
@@ -29,11 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Update button visual
             if (newTheme === 'dark') {
-                themeToggleBtn.textContent = "Passer en mode Clair ☀️";
+                themeToggleBtn.textContent = getThemeTranslation('switch_light', "Passer en mode Clair ☀️");
                 themeToggleBtn.classList.remove('btn-outline');
                 themeToggleBtn.classList.add('btn-accent');
             } else {
-                themeToggleBtn.textContent = "Passer en mode Sombre 🌙";
+                themeToggleBtn.textContent = getThemeTranslation('switch_dark', "Passer en mode Sombre 🌙");
                 themeToggleBtn.classList.remove('btn-accent');
                 themeToggleBtn.classList.add('btn-outline');
             }
