@@ -19,16 +19,14 @@ $nb_places = "";
 $date_depart = "";
 $id_destination = "";
 $id_hotel = "";
-$destDisplay = ""; // ✅ Always defined now
+$destDisplay = ""; 
 
 /* =========================
    MODE EDITION
 ========================= */
 if (isset($_GET['id'])) {
     $id_circuit = $_GET['id'];
-    $stmt = $pdo->prepare("SELECT * FROM circuit WHERE id_circuit = ?");
-    $stmt->execute([$id_circuit]);
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $data = $circuit->getById($id_circuit);
 
     if ($data) {
         $titre = $data['titre'];
@@ -41,9 +39,7 @@ if (isset($_GET['id'])) {
 
         // Fetch display name for edit mode
         if (!empty($id_destination)) {
-            $stmtDest = $pdo->prepare("SELECT ville, pays FROM destination WHERE id_destination = ?");
-            $stmtDest->execute([$id_destination]);
-            $destInfo = $stmtDest->fetch(PDO::FETCH_ASSOC);
+            $destInfo = $destination->getById($id_destination);
             if ($destInfo) $destDisplay = $destInfo['ville'] . ' - ' . $destInfo['pays'];
         }
     }
@@ -54,9 +50,7 @@ if (isset($_GET['id'])) {
 ========================= */
 if (isset($_GET['dest_id']) && is_numeric($_GET['dest_id']) && empty($id_circuit)) {
     $id_destination = $_GET['dest_id'];
-    $stmtDest = $pdo->prepare("SELECT ville, pays FROM destination WHERE id_destination = ?");
-    $stmtDest->execute([$id_destination]);
-    $destInfo = $stmtDest->fetch(PDO::FETCH_ASSOC);
+    $destInfo = $destination->getById($id_destination);
     if ($destInfo) $destDisplay = $destInfo['ville'] . ' - ' . $destInfo['pays'];
 }
 ?>
