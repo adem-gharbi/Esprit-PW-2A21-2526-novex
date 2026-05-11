@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Administrateur | Projet Écologique</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta name="description" content="Connectez-vous à votre compte administrateur.">
+    <style>
+        .lang-switcher { position: absolute; top: 20px; right: 20px; z-index: 100; }
+        
+        /* RTL overrides */
+        html[dir="rtl"] .lang-switcher { right: auto; left: 20px; }
+        html[dir="rtl"] .auth-wrapper { text-align: right; }
+        html[dir="rtl"] .form-control { text-align: right; }
+        html[dir="rtl"] .forgot-pwd-container { text-align: left !important; }
+    </style>
+</head>
+
+<body>
+<link rel="stylesheet" href="../../../../public/assets/css/return-dashboard.css">
+<a class="voyagio-return-dashboard" href="../../../../dashboard.php">&larr; Dashboard</a>
+
+
+    <!-- Language Switcher -->
+    <div class="lang-switcher">
+        <select onchange="changeLanguage(this.value)" style="padding: 5px; border-radius: 5px; background: white; border: 1px solid #ccc; font-size: 1rem;">
+            <option value="fr">🇫🇷 FR</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="ar">🇸🇦 AR</option>
+        </select>
+    </div>
+
+    <div class="auth-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h2 style="color: var(--color-btn);" data-i18n="admin_portal">Espace Admin</h2>
+                <p data-i18n="admin_login_desc">Connexion réservée aux administrateurs</p>
+            </div>
+
+            <!-- Note: Action pointe vers le contrôleur PHP loginAdmin -->
+            <form action="../Controller/UserController.php?action=loginAdmin" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="id" data-i18n="admin_id">ID Administrateur</label>
+                    <input type="number" id="id" name="id" class="form-control" placeholder="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="fullname" data-i18n="admin_fullname">Nom Complet</label>
+                    <input type="text" id="fullname" name="fullname" class="form-control" placeholder="Nom">
+                </div>
+
+                <div class="form-group">
+                    <label for="email" data-i18n="admin_email">Email Admin</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="admin@domaine.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="role" data-i18n="admin_role">Rôle</label>
+                    <input type="text" id="role" name="role" class="form-control" placeholder="admin" value="admin">
+                </div>
+
+                <div class="form-group">
+                    <label for="password" data-i18n="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
+                    <div class="forgot-pwd-container" style="text-align: right; margin-top: 5px;">
+                        <a href="forgot_password.html" style="font-size: 0.85rem; color: var(--color-btn); text-decoration: none;" data-i18n="forgot_password">Mot de passe oublié ?</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-accent" style="background-color: var(--color-btn);" data-i18n="access_panel">Accéder au panel</button>
+            </form>
+
+            <div class="auth-footer" style="margin-top: 20px; text-align: center;">
+                <p><a href="login.html" class="btn btn-outline" style="padding: 10px; display: inline-block; width: 100%; box-sizing: border-box;" data-i18n="back_to_client">👤 Se connecter en tant que Client</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/validation.js"></script>
+</body>
+
+</html>

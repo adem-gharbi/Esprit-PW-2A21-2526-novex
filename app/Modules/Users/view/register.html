@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription | Projet Écologique</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta name="description" content="Créez votre compte pour rejoindre notre plateforme.">
+    <script src="assets/js/validation.js"></script>
+    <style>
+        .lang-switcher { position: absolute; top: 20px; right: 20px; z-index: 100; }
+        
+        /* RTL overrides */
+        html[dir="rtl"] .lang-switcher { right: auto; left: 20px; }
+        html[dir="rtl"] .auth-wrapper { text-align: right; }
+        html[dir="rtl"] .form-control { text-align: right; }
+    </style>
+</head>
+
+<body>
+<link rel="stylesheet" href="../../../../public/assets/css/return-dashboard.css">
+<a class="voyagio-return-dashboard" href="../../../../dashboard.php">&larr; Dashboard</a>
+
+   
+    <!-- Language Switcher -->
+    <div class="lang-switcher">
+        <select onchange="changeLanguage(this.value)" style="padding: 5px; border-radius: 5px; background: white; border: 1px solid #ccc; font-size: 1rem;">
+            <option value="fr">🇫🇷 FR</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="ar">🇸🇦 AR</option>
+        </select>
+    </div>
+
+    <div class="auth-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h2 data-i18n="create_your_account">Créer un compte</h2>
+                <p data-i18n="join_us">Rejoignez-nous pour une expérience durable</p>
+            </div>
+
+            <!-- Note: Action pointe vers le contrôleur PHP pour gérer l'inscription -->
+            <form action="../Controller/UserController.php?action=register" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="fullname" data-i18n="fullname">Nom complet</label>
+                    <div class="input-with-voice">
+                        <input type="text" id="fullname" name="fullname" class="form-control" placeholder="John Doe">
+                        <button class="voice-btn" data-target="fullname" title="Saisie vocale">🎤</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" data-i18n="email_address">Adresse Email</label>
+                    <div class="input-with-voice">
+                        <input type="email" id="email" name="email" class="form-control" placeholder="exemple@domaine.com">
+                        <button class="voice-btn" data-target="email" title="Saisie vocale">🎤</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="birthdate" data-i18n="birthdate">Date de naissance</label>
+                    <input type="date" id="birthdate" name="birthdate" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="tel" data-i18n="phone">Téléphone</label>
+                    <div class="input-with-voice">
+                        <input type="tel" id="tel" name="tel" class="form-control" placeholder="Ex: 12345678">
+                        <button class="voice-btn" data-target="tel" title="Saisie vocale">🎤</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sexe" data-i18n="gender">Sexe</label>
+                    <select id="sexe" name="sexe" class="form-control">
+                        <option value="" disabled selected>Sélectionnez votre sexe</option>
+                        <option value="homme" data-i18n="male">Homme</option>
+                        <option value="femme" data-i18n="female">Femme</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" data-i18n="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password" data-i18n="confirm_password">Confirmer le mot de passe</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                        placeholder="••••••••">
+                </div>
+
+                <!-- Section Photo Profile (WebRTC) -->
+                <div class="form-group" style="text-align: center; margin-top: 20px;">
+                    <label data-i18n="security_photo">Photo de profil (Obligatoire)</label>
+                    
+                    <div style="background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; font-size: 0.85em; margin-bottom: 15px; border-left: 4px solid #4CAF50;" data-i18n="security_photo_desc">
+                        🔒 <strong>Confidentialité garantie :</strong> Cette photo de sécurité sera uniquement utilisée pour certifier votre identité sur votre espace personnel.
+                    </div>
+
+                    <div id="camera-container" style="display: none; border: 2px dashed var(--color-accent); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        <video id="video-stream" width="320" height="240" autoplay style="border-radius: 8px; transform: scaleX(-1);"></video>
+                        <canvas id="photo-canvas" width="320" height="240" style="display: none; border-radius: 8px; transform: scaleX(-1);"></canvas>
+                        <br>
+                        <button type="button" id="btn-capture" class="btn" style="background-color: #2196F3; color: white; margin-top: 10px;" data-i18n="take_photo">📸 Capturer</button>
+                        <button type="button" id="btn-retake" class="btn" style="display: none; background-color: #f44336; color: white; margin-top: 10px;" data-i18n="retake_photo">🔄 Reprendre</button>
+                    </div>
+                    <button type="button" id="btn-start-camera" class="btn btn-outline" style="width: 100%;" data-i18n="enable_camera">Activer la Caméra</button>
+                    <input type="hidden" name="photo_base64" id="photo_base64">
+                </div>
+
+                <button type="submit" class="btn btn-accent" data-i18n="register_btn">S'inscrire</button>
+            </form>
+
+            <div class="auth-footer">
+                <p><span data-i18n="already_have_account">Vous avez déjà un compte ?</span> <a href="login.html" data-i18n="login_here">Se connecter</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/validation.js"></script>
+    <script src="assets/js/voice_input.js"></script>
+</body>
+
+</html>

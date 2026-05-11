@@ -1,0 +1,139 @@
+/* =========================
+   VOYAGIO SHARED DESIGN SYSTEM
+   FRONT OFFICE
+========================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Playfair+Display:wght@400;600&display=swap');
+
+:root {
+    --beige: #F5EDE6;
+    --nude: #E8CFC1;
+    --brown: #A67B5B;
+    --green: #9CAF88;
+    --dark: #3A3A3A;
+    --gray: #555555;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--beige);
+    margin: 0;
+    padding: 0;
+    color: var(--dark);
+    line-height: 1.6;
+}
+
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--brown);
+    margin-top: 0;
+}
+
+header.hero {
+    background: linear-gradient(rgba(166,123,91,0.35), rgba(166,123,91,0.35)),
+                url('/voyagio/descir/public/images/ph3.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    border-radius: 0;
+}
+
+header.hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    margin: 0;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    padding: 40px;
+}
+
+.card {
+    background: var(--nude);
+    width: 280px;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+    transition: transform 0.4s, box-shadow 0.4s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+}
+
+.card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card h3 {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    color: var(--dark);
+}
+
+.card p {
+    margin: 5px 0;
+    color: var(--gray);
+}
+
+.mini-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 8px;
+    margin-bottom: 2px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--brown), var(--green));
+    color: white;
+    padding: 10px 15px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s, background 0.3s;
+    margin-top: auto;
+    align-self: center;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #8c6248, #8a9f77);
+}
+
+@media (max-width: 768px) {
+    .grid { padding: 20px; gap: 15px; }
+    .card { width: 100%; max-width: 320px; }
+    header.hero { height: 250px; }
+    header.hero h1 { font-size: 28px; }
+}

@@ -1,0 +1,35 @@
+# =============================================
+# Voyagio — .gitignore
+# =============================================
+
+# Fichiers de credentials et configuration sensible
+credentials.php
+**/credentials.php
+**/.env
+.env
+
+# Photos de profil uploadées (données utilisateurs)
+app/Modules/Users/uploads/profiles/
+
+# Fichiers de debug
+**/debug_login.txt
+**/*.log
+
+# Dépendances PHP (Composer)
+vendor/
+**/vendor/
+
+# Fichiers systèmes OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Fichiers temporaires PHP
+*.tmp
+*.cache
